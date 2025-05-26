@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Посади</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <!-- ... (код сайдбару, з активним посиланням на "Посади") ... -->
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html" class="active">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Посад</h1>
+          <button id="addPositionBtn" class="button button-primary">
+            Додати Посаду
+          </button>
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="positionSearchInput"
+            class="form-input"
+            placeholder="Пошук за назвою або описом..."
+          />
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <!-- <th>ID</th> -->
+                <th>Назва Посади</th>
+                <th>Опис</th>
+                <th>Базова Ставка</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="positionsTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="positions-loader" class="loader-text">Завантаження посад...</p>
+        <p id="positions-error" class="error-text" style="display: none"></p>
+        <p
+          id="positions-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Посад не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для форми створення/редагування посади -->
+    <div id="positionModal" class="modal">
+      <div class="modal-content card">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Додати Посаду</h2>
+        <form id="positionForm">
+          <input type="hidden" id="positionId" name="positionId" />
+          <div class="form-group">
+            <label for="positionName">Назва Посади:</label>
+            <input
+              type="text"
+              id="positionName"
+              name="positionName"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="positionDescription">Опис Посади:</label>
+            <textarea
+              id="positionDescription"
+              name="positionDescription"
+              class="form-input"
+              rows="3"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="basePositionRate"
+              >Базова Ставка (грн, необов'язково):</label
+            >
+            <input
+              type="number"
+              id="basePositionRate"
+              name="basePositionRate"
+              class="form-input"
+              min="0"
+              step="0.01"
+              placeholder="Залиште порожнім, якщо немає"
+            />
+          </div>
+          <button
+            type="submit"
+            id="savePositionBtn"
+            class="button button-success"
+          >
+            Зберегти
+          </button>
+          <p id="position-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-positions.js"></script>
+  </body>
+</html>

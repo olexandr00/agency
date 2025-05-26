@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Контакти - Рекламне Агентство "СуперКреатив"</title>
+    <link href="css/custom.css" rel="stylesheet" />
+    <style>
+      /* Додаткові стилі для сторінки контактів */
+      .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr; /* Одна колонка за замовчуванням */
+        gap: 2.5rem;
+        margin-top: 2rem;
+      }
+      @media (min-width: 768px) {
+        /* Дві колонки на середніх екранах і більше */
+        .contact-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+      .contact-info-section h2,
+      .contact-form-section h2 {
+        font-size: 1.75rem;
+        margin-bottom: 1.5rem;
+      }
+      .contact-details-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .contact-details-list li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: flex-start; /* Для вирівнювання іконок та тексту */
+      }
+      .contact-details-list li i {
+        /* Якщо будете використовувати іконки */
+        font-size: 1.25rem;
+        color: var(--primary-color);
+        margin-right: 0.75rem;
+        width: 20px; /* Фіксована ширина для іконок */
+        text-align: center;
+      }
+      .map-container {
+        width: 100%;
+        height: 350px;
+        background-color: #e9ecef; /* Заглушка, якщо карти немає */
+        border-radius: var(--border-radius);
+        overflow: hidden; /* Для вбудованої карти */
+        margin-top: 1.5rem;
+      }
+      .map-container iframe {
+        width: 100%;
+        height: 100%;
+        border: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Головна</a></li>
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="services.html">Послуги</a></li>
+          <li><a href="reviews.html">Відгуки</a></li>
+          <li><a href="contact.html" class="active">Контакти</a></li>
+          <li id="auth-links-container">
+            <!-- Заповнюється auth.js -->
+          </li>
+          <li>
+            <a href="cart.html">Кошик (<span id="cart-count">0</span>)</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content container">
+      <h1 class="page-title">Зв'яжіться з Нами</h1>
+      <p
+        style="
+          text-align: center;
+          max-width: 600px;
+          margin: 0 auto 2.5rem auto;
+          color: var(--text-light-color);
+        "
+      >
+        Ми завжди раді новим проектам та співпраці! Заповніть форму нижче або
+        скористайтеся нашими контактними даними.
+      </p>
+
+      <div class="contact-grid">
+        <section class="contact-info-section">
+          <h2>Наша Адреса та Контакти</h2>
+          <ul class="contact-details-list">
+            <li>
+              <!-- <i class="fas fa-map-marker-alt"></i> Іконка -->
+              <div>
+                <strong>Адреса:</strong><br />
+                вул. Рекламна, 1, м. Київ, Україна, 00000
+              </div>
+            </li>
+            <li>
+              <!-- <i class="fas fa-phone"></i> -->
+              <div>
+                <strong>Телефон:</strong><br />
+                <a href="tel:+380777777777">+380777777777</a>
+              </div>
+            </li>
+            <li>
+              <!-- <i class="fas fa-envelope"></i> -->
+              <div>
+                <strong>Email:</strong><br />
+                <a href="mailto:info@supercreative.agency"
+                  >info@supercreative.agency</a
+                >
+              </div>
+            </li>
+            <li>
+              <!-- <i class="fas fa-clock"></i> -->
+              <div>
+                <strong>Години роботи:</strong><br />
+                Пн - Пт: 9:00 - 18:00
+              </div>
+            </li>
+          </ul>
+          <div class="map-container">
+            <!-- Вставте сюди код для Google Maps або іншої карти -->
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2540.518075906835!2d30.52090931573131!3d50.45003397947523!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40d4ce504dab8661%3A0x71a2f72350838c78!2z0JzQsNC70ZbQsNCy0LDRjyDQvdCw0YbRltC-0L_QsNC00LAsINCa0LjRl9Cy!5e0!3m2!1suk!2sua!4v1620000000000!5m2!1suk!2sua"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            ></iframe>
+          </div>
+        </section>
+
+        <section class="contact-form-section card">
+          <h2>Напишіть Нам</h2>
+          <form id="contactForm">
+            <div class="form-group">
+              <label for="senderName">Ваше ім'я:</label>
+              <input
+                type="text"
+                id="senderName"
+                name="senderName"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="senderEmail">Ваш Email:</label>
+              <input
+                type="email"
+                id="senderEmail"
+                name="senderEmail"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="senderPhone">Ваш телефон (необов'язково):</label>
+              <input
+                type="tel"
+                id="senderPhone"
+                name="senderPhone"
+                class="form-input"
+              />
+            </div>
+            <div class="form-group">
+              <label for="messageSubject"
+                >Тема повідомлення (необов'язково):</label
+              >
+              <input
+                type="text"
+                id="messageSubject"
+                name="messageSubject"
+                class="form-input"
+              />
+            </div>
+            <div class="form-group">
+              <label for="messageText">Повідомлення:</label>
+              <textarea
+                id="messageText"
+                name="messageText"
+                class="form-input"
+                rows="6"
+                required
+              ></textarea>
+            </div>
+            <button
+              type="submit"
+              class="button button-primary"
+              style="width: 100%"
+            >
+              Відправити
+            </button>
+            <p
+              id="contact-form-message"
+              class="form-message"
+              style="margin-top: 1rem"
+            ></p>
+          </form>
+        </section>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <!-- ... (код футера) ... -->
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/contactForm.js"></script>
+    <!-- Логіка для контактної форми -->
+  </body>
+</html>

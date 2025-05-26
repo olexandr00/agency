@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Про Нас - Рекламне Агентство "СуперКреатив"</title>
+    <link href="css/custom.css" rel="stylesheet" />
+    <style>
+      /* Додаткові стилі для сторінки "Про нас" */
+      .about-hero {
+        background-color: var(--light-color); /* Або фонове зображення */
+        padding: 4rem 0;
+        text-align: center;
+        margin-bottom: 3rem;
+      }
+      .about-hero h1 {
+        font-size: 2.5rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+      }
+      .about-hero p {
+        font-size: 1.1rem;
+        color: var(--text-light-color);
+        max-width: 700px;
+        margin: 0 auto;
+      }
+
+      .about-content {
+        line-height: 1.8;
+        margin-bottom: 3rem;
+      }
+      .about-content h2 {
+        font-size: 1.75rem;
+        color: var(--text-color);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid var(--primary-color);
+        display: inline-block; /* Щоб бордер був по ширині тексту */
+      }
+      .about-content p {
+        margin-bottom: 1rem;
+      }
+
+      .team-section {
+        padding: 3rem 0;
+        background-color: var(
+          --surface-color
+        ); /* Трохи інший фон для команди */
+      }
+      .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+      }
+      .team-member-card {
+        /* Наслідує .card */
+        text-align: center;
+      }
+      .team-member-photo {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 1rem auto;
+        border: 3px solid var(--primary-color);
+      }
+      .team-member-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .team-member-position {
+        font-size: 0.95rem;
+        color: var(--primary-color);
+        margin-bottom: 0.75rem;
+        font-weight: 500;
+      }
+      .team-member-bio {
+        /* Опціонально, якщо є біо */
+        font-size: 0.9rem;
+        color: var(--text-light-color);
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Головна</a></li>
+          <li><a href="about.html" class="active">Про нас</a></li>
+          <li><a href="services.html">Послуги</a></li>
+          <li><a href="reviews.html">Відгуки</a></li>
+          <li><a href="contact.html">Контакти</a></li>
+          <li id="auth-links-container">
+            <!-- Заповнюється auth.js -->
+          </li>
+          <li>
+            <a href="cart.html">Кошик (<span id="cart-count">0</span>)</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content">
+      <section class="about-hero">
+        <div class="container">
+          <h1>Наша Історія та Місія</h1>
+          <p>
+            Ми - команда пристрасних професіоналів, об'єднаних спільною метою:
+            створювати рекламні кампанії, які не просто вражають, а й приносять
+            реальні результати для бізнесу наших клієнтів.
+          </p>
+        </div>
+      </section>
+
+      <section class="about-content container">
+        <h2>Хто Ми Такі?</h2>
+        <p>
+          Рекламне агентство "СуперКреатив" було засноване у 2025 році з місією
+          змінити підхід до маркетингу. Ми віримо в силу креативності,
+          стратегічного планування та глибокого аналізу даних. Наша команда
+          поєднує досвідчених маркетологів, талановитих дизайнерів, вправних
+          копірайтерів та аналітиків, готових до будь-яких викликів.
+        </p>
+        <p>
+          Ми спеціалізуємося на цифровій рекламі, брендингу та створенні
+          контенту. Наша мета – не просто виконати завдання, а стати надійним
+          партнером для наших клієнтів на шляху до їхнього успіху.
+        </p>
+
+        <h2>Наші Цінності</h2>
+        <ul>
+          <li>
+            <strong>Клієнтоорієнтованість:</strong> Успіх наших клієнтів – наш
+            головний пріоритет.
+          </li>
+          <li>
+            <strong>Інноваційність:</strong> Ми постійно шукаємо нові ідеї та
+            підходи.
+          </li>
+          <li>
+            <strong>Прозорість:</strong> Ми будуємо відкриті та чесні відносини.
+          </li>
+          <li>
+            <strong>Результативність:</strong> Кожен наш крок спрямований на
+            досягнення конкретних цілей.
+          </li>
+          <li>
+            <strong>Командна робота:</strong> Разом ми можемо досягти більшого.
+          </li>
+        </ul>
+      </section>
+
+      <section class="team-section">
+        <div class="container">
+          <h2 class="section-title" style="margin-bottom: 2.5rem">
+            Наша Команда
+          </h2>
+          <div id="team-members-grid" class="team-grid">
+            <!-- Сюди будуть завантажуватися картки працівників -->
+            <p id="team-loader" class="loader-text">
+              Завантаження інформації про команду...
+            </p>
+            <p id="team-error" class="error-text" style="display: none"></p>
+            <p
+              id="team-no-results"
+              class="no-results-text"
+              style="display: none"
+            >
+              Інформація про команду наразі недоступна.
+            </p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <!-- ... (код футера) ... -->
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/about.js"></script>
+    <!-- Новий JS файл для цієї сторінки -->
+  </body>
+</html>

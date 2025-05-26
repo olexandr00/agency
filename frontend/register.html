@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Реєстрація - Рекламне Агентство</title>
+    <link href="css/custom.css" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="site-header">
+      <!-- ... (код хедера) ... -->
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Головна</a></li>
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="services.html">Послуги</a></li>
+          <li><a href="reviews.html">Відгуки</a></li>
+          <li><a href="contact.html">Контакти</a></li>
+          <li id="auth-links-container">
+            <a href="login.html">Вхід</a>
+            <a href="register.html" class="active">Реєстрація</a>
+          </li>
+          <li>
+            <a href="cart.html">Кошик (<span id="cart-count">0</span>)</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content container auth-page">
+      <div class="auth-form-container card">
+        <h1
+          class="page-title"
+          style="font-size: 1.75rem; margin-bottom: 1.5rem"
+        >
+          Створення Облікового Запису
+        </h1>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="username">Ім'я користувача (логін):</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-input"
+              required
+              minlength="3"
+            />
+          </div>
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Пароль:</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              required
+              minlength="6"
+            />
+          </div>
+          <div class="form-group">
+            <label for="confirmPassword">Підтвердіть пароль:</label>
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              class="form-input"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            class="button button-primary"
+            style="width: 100%; margin-top: 1rem"
+          >
+            Зареєструватися
+          </button>
+          <p id="register-message" class="form-message"></p>
+        </form>
+        <p class="auth-switch-link">
+          Вже є обліковий запис? <a href="login.html">Увійти</a>
+        </p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© 2024 Рекламне Агентство "СуперКреатив". Всі права захищено.</p>
+        <p>
+          <a
+            href="admin/dashboard.html"
+            id="admin-link"
+            class="admin-panel-link"
+            style="display: none"
+            >Адмін-панель</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <!-- Специфічний JS для реєстрації буде в auth.js -->
+  </body>
+</html>

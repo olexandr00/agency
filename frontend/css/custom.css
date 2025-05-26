@@ -1,0 +1,1103 @@
+/* frontend/css/custom.css */
+
+/* --- Змінні --- */
+:root {
+  --primary-color: #3b82f6; /* Синій (схожий на Tailwind's blue-500) */
+  --secondary-color: #6b7280; /* Сірий (схожий на Tailwind's gray-500) */
+  --success-color: #10b981; /* Зелений (схожий на Tailwind's green-500) */
+  --danger-color: #ef4444; /* Червоний (схожий на Tailwind's red-500) */
+  --warning-color: #f59e0b; /* Жовтий (схожий на Tailwind's amber-500) */
+
+  --text-color: #1f2937; /* Темно-сірий для тексту */
+  --text-light-color: #4b5563; /* Світліший сірий для вторинного тексту */
+  --background-color: #f9fafb; /* Дуже світло-сірий фон */
+  --surface-color: #ffffff; /* Білий для карток, хедерів */
+
+  --border-color: #e5e7eb; /* Світло-сірий для бордюрів */
+  --border-radius: 0.375rem; /* 6px */
+  --box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --box-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  --container-max-width: 1140px;
+  --base-font-size: 16px;
+  --font-family-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* --- Базові стилі та скидання --- */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family-sans);
+  font-size: var(--base-font-size);
+  line-height: 1.6;
+  color: var(--text-color);
+  background-color: var(--background-color);
+}
+
+a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* --- Контейнер --- */
+.container {
+  width: 100%;
+  padding-right: 1rem; /* 16px */
+  padding-left: 1rem; /* 16px */
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 640px) {
+  /* sm */
+  .container {
+    max-width: 640px;
+  }
+}
+@media (min-width: 768px) {
+  /* md */
+  .container {
+    max-width: 768px;
+  }
+}
+@media (min-width: 1024px) {
+  /* lg */
+  .container {
+    max-width: 1024px;
+  }
+}
+@media (min-width: 1280px) {
+  /* xl */
+  .container {
+    max-width: var(--container-max-width);
+  }
+}
+
+/* --- Хедер та Навігація --- */
+.site-header {
+  background-color: var(--surface-color);
+  padding: 1rem 0;
+  box-shadow: var(--box-shadow);
+  position: sticky; /* Липкий хедер */
+  top: 0;
+  z-index: 1000;
+}
+
+.main-navigation {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo a {
+  font-size: 1.75rem; /* 28px */
+  font-weight: 700; /* bold */
+  color: var(--text-color);
+}
+.logo a:hover {
+  text-decoration: none;
+  color: var(--primary-color);
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  align-items: center;
+}
+
+.nav-links li {
+  margin-left: 1.5rem; /* 24px */
+}
+
+.nav-links a {
+  font-size: 1rem; /* 16px */
+  color: var(--text-light-color);
+  padding: 0.5rem 0; /* Додамо трохи відступу для кращого вигляду */
+  position: relative; /* Для підкреслення при наведенні */
+}
+.nav-links a:hover,
+.nav-links a.active {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+.nav-links a.active::after,
+.nav-links a:hover::after {
+  /* Анімаційне підкреслення */
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--primary-color);
+}
+
+#auth-links-container button {
+  background: none;
+  border: none;
+  color: var(--text-light-color);
+  cursor: pointer;
+  padding: 0.5rem 0;
+  font-size: 1rem;
+  font-family: var(--font-family-sans);
+}
+#auth-links-container button:hover {
+  color: var(--primary-color);
+}
+#auth-links-container span {
+  /* Для "Вітаємо, ..." */
+  color: var(--text-color);
+  margin-right: 0.5rem;
+}
+
+/* --- Основний контент --- */
+.main-content {
+  padding-top: 2rem; /* 32px */
+  padding-bottom: 2rem; /* 32px */
+  min-height: calc(100vh - 200px); /* Приблизно, щоб футер був внизу */
+}
+
+.page-title {
+  font-size: 2.25rem; /* 36px */
+  font-weight: 700;
+  color: var(--text-color);
+  text-align: center;
+  margin-bottom: 2.5rem; /* 40px */
+}
+
+/* --- Форми та Кнопки --- */
+.form-input {
+  display: block;
+  width: 100%;
+  padding: 0.75rem 1rem; /* 12px 16px */
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--surface-color);
+  background-clip: padding-box;
+  border: 1px solid var(--border-color);
+  appearance: none; /* Скидання стандартного вигляду */
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.form-input:focus {
+  color: var(--text-color);
+  background-color: var(--surface-color);
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25); /* Схоже на focus:ring-blue-300 */
+}
+
+.button {
+  display: inline-block;
+  font-weight: 600; /* semibold */
+  line-height: 1.5;
+  color: #fff;
+  text-align: center;
+  vertical-align: middle;
+  cursor: pointer;
+  user-select: none;
+  background-color: var(--primary-color);
+  border: 1px solid transparent;
+  padding: 0.625rem 1.25rem; /* 10px 20px */
+  font-size: 1rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.button:hover {
+  background-color: #2563eb; /* Темніший синій */
+  text-decoration: none;
+}
+.button:focus {
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.5);
+}
+
+.button-success {
+  background-color: var(--success-color);
+}
+.button-success:hover {
+  background-color: #059669; /* Темніший зелений */
+}
+.button-danger {
+  background-color: var(--danger-color);
+}
+.button-danger:hover {
+  background-color: #dc2626; /* Темніший червоний */
+}
+.button-secondary {
+  background-color: var(--secondary-color);
+}
+.button-secondary:hover {
+  background-color: #4b5563; /* Темніший сірий */
+}
+
+/* Поле пошуку на сторінці послуг */
+.search-bar-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}
+#service-search-input {
+  width: 50%;
+  min-width: 250px;
+  max-width: 500px; /* Обмежимо максимальну ширину */
+  margin-right: 0.75rem;
+}
+
+/* --- Картки --- */
+.card {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-lg); /* Більш виражена тінь для карток */
+  padding: 1.5rem; /* 24px */
+  overflow: hidden; /* Якщо будуть зображення, щоб обрізалися по радіусу */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+    0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* Картки послуг */
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.service-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.service-title {
+  font-size: 1.375rem; /* 22px */
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+.service-card .service-title:hover {
+  /* Якщо назва послуги є посиланням */
+  color: var(--primary-color);
+}
+
+.service-description {
+  font-size: 0.95rem;
+  color: var(--text-light-color);
+  margin-bottom: 1rem;
+  flex-grow: 1;
+  line-height: 1.6;
+}
+
+.service-price {
+  font-size: 1.25rem; /* 20px */
+  font-weight: 700;
+  color: var(--success-color);
+  margin-bottom: 1.25rem;
+}
+
+.add-to-cart-button {
+  /* Наслідує .button, але можна перевизначити */
+  width: 100%;
+  background-color: var(--primary-color); /* Зробимо синім, а не зеленим */
+  font-weight: 600;
+}
+.add-to-cart-button:hover {
+  background-color: #2563eb;
+}
+
+/* Завантажувач та повідомлення */
+.loader-text,
+.error-text,
+.no-results-text {
+  grid-column: 1 / -1; /* Якщо всередині гріда */
+  text-align: center;
+  padding: 2rem 0;
+  font-size: 1.125rem; /* 18px */
+  color: var(--text-light-color);
+}
+.error-text {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+/* --- Футер --- */
+.site-footer {
+  background-color: var(--text-color); /* Темний фон */
+  color: #d1d5db; /* Світло-сірий текст */
+  padding: 2.5rem 0;
+  text-align: center;
+}
+.site-footer p {
+  margin-bottom: 0.5rem;
+}
+.site-footer a.admin-panel-link {
+  color: #9ca3af; /* Ще світліший сірий */
+  text-decoration: none;
+}
+.site-footer a.admin-panel-link:hover {
+  color: var(--surface-color);
+  text-decoration: underline;
+}
+
+/* Додатково: невеликий фікс для кнопок всередині #auth-links-container, якщо вони є */
+#auth-links-container > * {
+  margin-left: 1.5rem;
+}
+#auth-links-container > *:first-child {
+  margin-left: 0; /* Якщо це єдиний елемент або перший */
+}
+#auth-links-container span + button {
+  /* Якщо є "Вітаємо" і кнопка "Вихід" */
+  margin-left: 0.75rem;
+}
+
+/* Адаптивність для навігації (дуже базовий приклад) */
+@media (max-width: 768px) {
+  .main-navigation {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-links {
+    flex-direction: column;
+    width: 100%;
+    margin-top: 1rem;
+  }
+  .nav-links li {
+    margin-left: 0;
+    width: 100%;
+    text-align: left; /* Або center, якщо так краще */
+  }
+  .nav-links a {
+    display: block; /* Щоб посилання займали всю ширину */
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+  .nav-links li:last-child a {
+    border-bottom: none;
+  }
+  .nav-links a:hover::after,
+  .nav-links a.active::after {
+    display: none; /* Прибираємо підкреслення для мобільного меню */
+  }
+  #auth-links-container > * {
+    margin-left: 0;
+    display: block; /* Кожен елемент з нового рядка */
+    padding: 0.75rem 0;
+  }
+  #auth-links-container span + button {
+    margin-left: 0;
+  }
+}
+
+/* frontend/css/custom.css (додайте до існуючих стилів) */
+
+/* ... існуючі стилі ... */
+
+/* Cart Page Specific Styles */
+.info-text {
+  /* Для повідомлення "Ваш кошик порожній" */
+  font-size: 1.125rem;
+  color: var(--text-light-color);
+  padding: 2rem 0;
+}
+
+.cart-item {
+  /* Наслідує .card */
+  margin-bottom: 1.5rem;
+  padding: 1.25rem; /* Трохи менший padding */
+}
+
+.cart-item-name {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.cart-item-price {
+  font-size: 1rem;
+  color: var(--text-light-color);
+  margin-bottom: 0.75rem;
+}
+
+.cart-item-quantity {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.cart-item-quantity label {
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+.quantity-input {
+  /* Наслідує .form-input */
+  width: 70px !important; /* Важливо, щоб перевизначити width: 100% з .form-input */
+  padding: 0.375rem 0.5rem !important; /* Менший padding */
+  text-align: center;
+  margin-right: 1rem;
+}
+.remove-item-button {
+  /* Наслідує .button .button-danger */
+  padding: 0.375rem 0.75rem !important; /* Менша кнопка */
+  font-size: 0.875rem;
+}
+
+.cart-item-total {
+  font-size: 1.1rem;
+  font-weight: bold;
+  text-align: right; /* Вирівнюємо загальну суму за позицію праворуч */
+}
+
+#cart-summary {
+  background-color: var(--light-color); /* Трохи інший фон для підсумку */
+  padding: 1.5rem;
+  border-top: 2px solid var(--primary-color);
+}
+#cart-summary h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+}
+#cart-total-price {
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  text-align: right;
+}
+
+/* Checkout Form */
+#checkout-form-container h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+#checkout-form {
+  /* Наслідує .card */
+  padding: 2rem; /* Більший padding для форми */
+}
+.form-group {
+  margin-bottom: 1.25rem;
+}
+.form-group label {
+  display: block;
+  margin-bottom: 0.375rem;
+  font-weight: 500; /* medium */
+  font-size: 0.9rem;
+}
+#checkout-message {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  text-align: center;
+  font-weight: 500;
+}
+#checkout-message:empty {
+  /* Ховаємо блок, якщо він порожній */
+  display: none;
+}
+/* Стилі для повідомлення про успіх/помилку будуть встановлюватися JS через style.color,
+   але можна додати класи для фону, наприклад */
+.message-success {
+  background-color: #d1fae5; /* Світло-зелений */
+  color: #065f46; /* Темно-зелений */
+  border: 1px solid #6ee7b7;
+}
+.message-error {
+  background-color: #fee2e2; /* Світло-червоний */
+  color: #991b1b; /* Темно-червоний */
+  border: 1px solid #fca5a5;
+}
+.message-warning {
+  background-color: #fffbeb; /* Світло-жовтий */
+  color: #92400e; /* Темно-жовтий */
+  border: 1px solid #fde68a;
+}
+
+/* frontend/css/custom.css (додайте до існуючих стилів) */
+
+/* ... існуючі стилі ... */
+
+.main-content-home {
+  /* Якщо потрібні інші відступи, ніж для .main-content */
+  padding-top: 0; /* Герой-секція може бути без верхнього відступу */
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: var(--primary-color); /* Або фонове зображення */
+  /* background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('../assets/images/hero-bg.jpg'); */
+  /* background-size: cover; */
+  /* background-position: center; */
+  color: var(--surface-color);
+  padding: 6rem 0; /* 96px зверху/знизу */
+  text-align: center;
+}
+.hero-content {
+  max-width: 800px; /* Обмеження ширини контенту в герой-секції */
+}
+.hero-title {
+  font-size: 2.5rem; /* 40px, можна більше для моб: 3rem -> 48px */
+  font-weight: 800; /* extrabold */
+  line-height: 1.2;
+  margin-bottom: 1.5rem; /* 24px */
+}
+@media (min-width: 768px) {
+  .hero-title {
+    font-size: 3.25rem; /* 52px */
+  }
+}
+.hero-subtitle {
+  font-size: 1.125rem; /* 18px */
+  line-height: 1.7;
+  margin-bottom: 2.5rem; /* 40px */
+  opacity: 0.9;
+}
+.hero-cta {
+  /* Наслідує .button */
+  padding: 0.875rem 2.5rem; /* 14px 40px - більша кнопка */
+  font-size: 1.125rem;
+  background-color: var(--surface-color); /* Біла кнопка на синьому фоні */
+  color: var(--primary-color);
+  box-shadow: var(--box-shadow-lg);
+}
+.hero-cta:hover {
+  background-color: #f0f0f0; /* Трохи темніший білий */
+  color: var(--primary-color);
+}
+
+/* Section Title (загальний для секцій) */
+.section-title {
+  font-size: 2rem; /* 32px */
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 3rem; /* 48px */
+  color: var(--text-color);
+  position: relative;
+  padding-bottom: 0.75rem; /* Для підкреслення */
+}
+.section-title::after {
+  /* Декоративне підкреслення */
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  height: 3px;
+  background-color: var(--primary-color);
+}
+
+/* Features Section */
+.features-section {
+  padding: 4rem 0; /* 64px */
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem; /* 32px */
+}
+.feature-item {
+  /* Наслідує .card */
+  text-align: center;
+}
+.feature-icon {
+  /* Якщо використовуєте іконки */
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+.feature-title {
+  font-size: 1.375rem; /* 22px */
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.feature-item p {
+  font-size: 0.95rem;
+  color: var(--text-light-color);
+  line-height: 1.6;
+}
+
+/* Popular Services Section */
+.popular-services-section {
+  padding: 4rem 0;
+  background-color: var(--surface-color); /* Можна виділити іншим фоном */
+}
+/* .services-grid та .service-card вже стилізовані */
+.popular-services-section .text-center .button-secondary {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  font-weight: 600;
+}
+.popular-services-section .text-center .button-secondary:hover {
+  background-color: var(--primary-color);
+  color: var(--surface-color);
+}
+
+/* Testimonials Section */
+.testimonials-section {
+  padding: 4rem 0;
+}
+.testimonials-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+.testimonial-card {
+  /* Наслідує .card */
+  background-color: var(--light-color); /* Трохи інший фон для відгуків */
+  padding: 2rem;
+}
+.testimonial-text {
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--text-light-color);
+  line-height: 1.7;
+  margin-bottom: 1.5rem;
+  position: relative;
+  padding-left: 2.5rem; /* Місце для лапок */
+}
+.testimonial-text::before {
+  /* Декоративні лапки */
+  content: "“";
+  font-family: Georgia, serif;
+  font-size: 3.5rem;
+  color: var(--primary-color);
+  position: absolute;
+  left: 0;
+  top: -0.5rem;
+  opacity: 0.8;
+}
+.testimonial-author {
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: right;
+  color: var(--text-color);
+}
+
+/* CTA Section */
+.cta-section {
+  background-color: var(--secondary-color); /* Темніший фон для контрасту */
+  color: var(--surface-color);
+  padding: 4rem 0;
+  text-align: center;
+}
+.cta-content {
+  max-width: 700px;
+}
+.cta-title {
+  font-size: 1.875rem; /* 30px */
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.cta-text {
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+  opacity: 0.9;
+}
+.button-lg {
+  /* Для більших кнопок */
+  padding: 0.875rem 2rem !important;
+  font-size: 1.125rem !important;
+}
+
+/* Утиліта для центрування тексту */
+.text-center {
+  text-align: center;
+}
+
+/* frontend/css/custom.css (додайте до існуючих стилів) */
+
+/* ... існуючі стилі ... */
+
+/* Authentication Pages (Login, Register) */
+.auth-page {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start; /* Щоб форма була зверху, якщо контенту мало */
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+}
+
+.auth-form-container {
+  /* Наслідує .card */
+  width: 100%;
+  max-width: 450px; /* Максимальна ширина форми */
+  padding: 2rem 2.5rem; /* Більші відступи всередині */
+}
+
+.auth-form-container .page-title {
+  /* Перевизначення для заголовка форми */
+  font-size: 1.75rem; /* 28px */
+  margin-bottom: 2rem; /* Більший відступ знизу */
+  text-align: center;
+}
+
+.form-message {
+  /* Для повідомлень під формою (успіх/помилка) */
+  margin-top: 1.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 0.9rem;
+  text-align: center;
+  display: none; /* За замовчуванням приховано */
+}
+.form-message.success {
+  background-color: #d1fae5; /* Світло-зелений */
+  color: #065f46; /* Темно-зелений */
+  border: 1px solid #6ee7b7;
+  display: block;
+}
+.form-message.error {
+  background-color: #fee2e2; /* Світло-червоний */
+  color: #991b1b; /* Темно-червоний */
+  border: 1px solid #fca5a5;
+  display: block;
+}
+
+.auth-switch-link {
+  /* Для посилання "Немає облікового запису? Зареєструватися" */
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-light-color);
+}
+.auth-switch-link a {
+  font-weight: 600; /* semibold */
+}
+
+/* Стилі для навігації (додано/змінено в auth.js) */
+.nav-username {
+  color: var(--text-color);
+  font-weight: 500;
+}
+.nav-logout-button {
+  background: none;
+  border: none;
+  color: var(--text-light-color);
+  cursor: pointer;
+  font-size: 1rem; /* Такий самий як у посилань */
+  font-family: var(--font-family-sans);
+  padding: 0.5rem 0;
+}
+.nav-logout-button:hover {
+  color: var(--primary-color);
+}
+/* frontend/css/custom.css (додайте до існуючих стилів) */
+
+/* ... існуючі стилі ... */
+
+#add-review-section h2 {
+  font-size: 1.5rem; /* 24px */
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.reviews-grid {
+  /* Для відображення відгуків, може бути одна колонка або кілька */
+  display: grid;
+  gap: 1.5rem;
+  /* grid-template-columns: 1fr; За замовчуванням одна колонка */
+}
+
+/* Стилі для .testimonial-card вже є з головної сторінки, але можна додати специфічні */
+.testimonial-card .review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.testimonial-card .review-header strong {
+  /* Автор */
+  font-size: 1.05rem;
+  color: var(--text-color);
+}
+.testimonial-card .review-date {
+  font-size: 0.85rem;
+  color: var(--text-light-color);
+}
+.testimonial-card .review-service-name {
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  margin-bottom: 0.5rem;
+}
+.testimonial-card .review-service-name em {
+  font-style: normal;
+  font-weight: 500;
+}
+
+.testimonial-card .review-rating {
+  margin-bottom: 0.75rem;
+}
+.rating-stars .star {
+  font-size: 1.3rem; /* Розмір зірочок */
+  color: var(--border-color); /* Колір порожніх зірочок */
+  margin-right: 2px;
+}
+.rating-stars .star.filled {
+  color: var(--warning-color); /* Колір заповнених зірочок (жовтий/золотий) */
+}
+
+/* Перевизначення для .testimonial-text на сторінці відгуків, якщо потрібно */
+.reviews-grid .testimonial-text {
+  font-size: 1rem; /* Можна зробити трохи більшим */
+  padding-left: 0; /* Прибрати відступ для лапок, якщо не потрібен тут */
+  margin-bottom: 0.5rem; /* Зменшити нижній відступ */
+}
+.reviews-grid .testimonial-text::before {
+  display: none;
+}
+.reviews-grid .testimonial-author {
+  text-align: left; /* Вирівнювання автора ліворуч під текстом */
+  margin-top: 0.5rem;
+}
+
+#login-to-review-message {
+  /* Стилі для .info-text вже мають бути */
+  background-color: var(--light-color);
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  border: 1px dashed var(--border-color);
+}
+/* frontend/css/custom.css */
+
+/* ... (всі ваші існуючі стилі: змінні, база, хедер, футер, кнопки, картки, форми тощо) ... */
+
+/* --- Модальні вікна (загальні стилі) --- */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1050;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(
+    31,
+    41,
+    55,
+    0.7
+  ); /* затемнення з var(--text-color) з прозорістю */
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  pointer-events: none;
+}
+
+.modal.active {
+  display: flex;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-content {
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-lg);
+  padding: 2rem;
+  position: relative;
+  width: auto;
+  max-width: 90%; /* Щоб не розтягувалось на весь екран на мобільних */
+  margin: 1.5rem;
+  transform: scale(0.95) translateY(-15px);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    opacity 0.25s ease-out;
+  pointer-events: none;
+}
+
+.modal.active .modal-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.close-modal-button {
+  color: var(--secondary-color);
+  position: absolute;
+  top: 0.75rem; /* Зменшив відступ */
+  right: 1rem; /* Зменшив відступ */
+  font-size: 2rem;
+  font-weight: bold;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0.25rem; /* Для кращого кліку */
+  transition: color 0.2s ease-in-out;
+  background: none; /* Переконатись, що немає фону */
+  border: none; /* Переконатись, що немає рамки */
+}
+.close-modal-button:hover,
+.close-modal-button:focus {
+  color: var(--text-color);
+  text-decoration: none;
+}
+
+/* Специфічні стилі для модалки додавання в кошик */
+/* #addToCartModalIcon, #addToCartModalTitle, #addToCartModalMessage, .modal-actions 
+   вже мають inline-стилі, що є нормально для унікальних блоків,
+   але можна винести сюди для чистоти HTML, якщо бажаєте.
+*/
+.modal-actions .button {
+  font-size: 0.9rem; /* Трохи менші кнопки */
+  padding: 0.6rem 1rem;
+}
+
+/* Toast Notifications (якщо ви використовуєте Main.showToast з main.js) */
+#toast-container {
+  position: fixed;
+  bottom: 20px; /* Змінив на bottom */
+  right: 20px;
+  z-index: 2000;
+  display: flex;
+  flex-direction: column-reverse; /* Нові знизу, старі зверху */
+  gap: 0.75rem;
+  align-items: flex-end; /* Вирівнювання по правому краю */
+}
+
+.toast {
+  padding: 0.75rem 1.25rem; /* Зменшив padding */
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-lg);
+  color: var(--surface-color);
+  font-weight: 500;
+  opacity: 0; /* Початково невидимий */
+  min-width: 280px;
+  max-width: 350px;
+  text-align: left;
+  animation: toast-slide-in 0.4s cubic-bezier(0.215, 0.61, 0.355, 1) forwards;
+  word-wrap: break-word;
+}
+
+.toast-info {
+  background-color: var(--secondary-color);
+}
+.toast-success {
+  background-color: var(--success-color);
+}
+.toast-error {
+  background-color: var(--danger-color);
+}
+.toast-warning {
+  background-color: var(--warning-color);
+}
+
+@keyframes toast-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 0.95;
+    transform: translateX(0);
+  }
+}
+
+.toast.toast-fade-out {
+  animation: toast-fade-out 0.5s ease-in forwards;
+}
+
+@keyframes toast-fade-out {
+  from {
+    opacity: 0.95;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* ... (всі ваші інші стилі для сторінок, адмінки тощо) ... */
+/* frontend/css/admin-crud.css */
+/* ... (існуючі стилі) ... */
+
+.crud-table tbody tr.dismissed-employee-row td {
+  color: var(--text-light-color); /* Світліший текст */
+  font-style: italic;
+  /* Можна додати перекреслення, якщо це доречно: */
+  /* text-decoration: line-through; */
+}
+.crud-table tbody tr.dismissed-employee-row:hover {
+  background-color: #fef3f2; /* Наприклад, дуже світлий червонуватий при наведенні */
+}
+.employee-photo-thumbnail {
+  width: 40px; /* Зменшив для таблиці */
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  /* margin-right: 10px; */ /* Можна прибрати, якщо тісно */
+  vertical-align: middle;
+  border: 1px solid var(--border-color);
+}
+.current-photo-preview {
+  display: block; /* Щоб був на новому рядку */
+  max-width: 120px; /* Зменшив */
+  max-height: 120px;
+  margin-top: 8px;
+  border: 1px solid var(--border-color);
+  padding: 4px;
+  border-radius: var(--border-radius);
+}
+.form-group.photo-upload-group {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: #f8f9fa;
+  border-radius: var(--border-radius);
+}
+#currentPhotoContainer label {
+  /* Для чекбокса "Видалити фото" */
+  font-weight: normal;
+  font-size: 0.9em;
+  display: inline-flex; /* Для кращого вирівнювання з чекбоксом */
+  align-items: center;
+  cursor: pointer;
+}
+#currentPhotoContainer input[type="checkbox"] {
+  margin-right: 0.5rem;
+  width: auto; /* Скидання стилів .form-input для чекбокса */
+  box-shadow: none;
+}
+.team-member-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 1rem auto;
+  border: 3px solid var(--primary-color);
+  box-shadow: var(--box-shadow); /* Додав тінь */
+}

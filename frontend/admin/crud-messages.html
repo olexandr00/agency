@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Повідомлення</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+    <style>
+      .message-text-cell {
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .message-text-cell:hover {
+        white-space: normal;
+        overflow: visible;
+        background-color: #fdfdfd;
+        position: relative;
+        z-index: 1;
+      }
+      .status-read {
+        color: var(--secondary-color);
+      }
+      .status-unread {
+        color: var(--primary-color);
+        font-weight: bold;
+      }
+      #modalMessageTextDisplay {
+        white-space: pre-wrap;
+        background: #f9f9f9;
+        padding: 1em;
+        border-radius: 4px;
+        max-height: 300px;
+        overflow-y: auto;
+      }
+    </style>
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <!-- ... (код сайдбару, з активним посиланням на "Повідомлення") ... -->
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html" class="active">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Повідомлень</h1>
+          <!-- Кнопка "Додати" тут не потрібна -->
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="messageSearchInput"
+            class="form-input"
+            placeholder="Пошук за відправником, темою, текстом..."
+          />
+          <select
+            id="readStatusFilter"
+            class="form-input"
+            style="max-width: 200px"
+          >
+            <option value="">Всі статуси</option>
+            <option value="1">Прочитані</option>
+            <option value="0">Непрочитані</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>Відправник</th>
+                <th>Email</th>
+                <th>Телефон</th>
+                <th>Тема</th>
+                <th>Текст (початок)</th>
+                <th>Дата відправки</th>
+                <th>Статус</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="messagesTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="messages-loader" class="loader-text">
+          Завантаження повідомлень...
+        </p>
+        <p id="messages-error" class="error-text" style="display: none"></p>
+        <p
+          id="messages-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Повідомлень не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для перегляду повного тексту повідомлення та зміни статусу -->
+    <div id="messageModal" class="modal">
+      <div class="modal-content card" style="max-width: 650px">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Деталі Повідомлення</h2>
+        <div id="messageDetailsContent">
+          <ul class="order-details-list">
+            <!-- Використаємо той самий стиль, що й для деталей замовлення -->
+            <li>
+              <strong>Відправник:</strong>
+              <span id="modalMessageSenderName"></span>
+            </li>
+            <li>
+              <strong>Email:</strong> <span id="modalMessageSenderEmail"></span>
+            </li>
+            <li>
+              <strong>Телефон:</strong>
+              <span id="modalMessageSenderPhone"></span>
+            </li>
+            <li>
+              <strong>Тема:</strong> <span id="modalMessageSubject"></span>
+            </li>
+            <li><strong>Дата:</strong> <span id="modalMessageDate"></span></li>
+            <li>
+              <strong>Статус:</strong> <span id="modalMessageStatusText"></span>
+            </li>
+          </ul>
+          <h3
+            style="margin-top: 1rem; margin-bottom: 0.5rem; font-size: 1.1rem"
+          >
+            Текст повідомлення:
+          </h3>
+          <p id="modalMessageTextDisplay"></p>
+        </div>
+        <form
+          id="messageStatusForm"
+          style="
+            margin-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1rem;
+          "
+        >
+          <input type="hidden" id="messageIdHidden" name="messageIdHidden" />
+          <div class="form-group">
+            <label for="modalMessageReadStatus">Змінити статус на:</label>
+            <select
+              id="modalMessageReadStatus"
+              name="isRead"
+              class="form-input"
+            >
+              <option value="1">Прочитано</option>
+              <option value="0">Непрочитано</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            id="saveMessageStatusBtn"
+            class="button button-success"
+          >
+            Зберегти Статус
+          </button>
+          <p id="message-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-messages.js"></script>
+  </body>
+</html>

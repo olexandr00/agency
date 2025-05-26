@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Наші Послуги - Рекламне Агентство</title>
+    <link href="css/custom.css" rel="stylesheet" />
+  </head>
+  <body class="page-services">
+    <!-- Додав клас для можливої специфічної стилізації -->
+    <header class="site-header">
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Головна</a></li>
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="services.html" class="active">Послуги</a></li>
+          <li><a href="reviews.html">Відгуки</a></li>
+          <li><a href="contact.html">Контакти</a></li>
+          <li id="auth-links-container">
+            <!-- Заповнюється auth.js -->
+          </li>
+          <li>
+            <a href="cart.html">Кошик (<span id="cart-count">0</span>)</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content container">
+      <h1 class="page-title">Наші Послуги</h1>
+
+      <div
+        class="search-bar-container"
+        style="margin-bottom: 2rem; text-align: center"
+      >
+        <input
+          type="text"
+          id="service-search-input"
+          placeholder="Пошук послуг..."
+          class="form-input"
+        />
+        <button id="service-search-button" class="button">Пошук</button>
+      </div>
+
+      <div id="services-list" class="services-grid">
+        <p id="services-loader" class="loader-text">Завантаження послуг...</p>
+        <p id="services-error" class="error-text" style="display: none"></p>
+        <p
+          id="services-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Послуг не знайдено.
+        </p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© 2024 Рекламне Агентство "СуперКреатив". Всі права захищено.</p>
+        <p>
+          <a
+            href="admin/dashboard.html"
+            id="admin-link"
+            class="admin-panel-link"
+            style="display: none"
+            >Адмін-панель</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <!-- Модальне вікно "Товар додано до кошика" -->
+    <div id="addToCartModal" class="modal item-added-modal">
+      <div
+        class="modal-content card"
+        style="max-width: 450px; text-align: center"
+      >
+        <span class="close-modal-button" id="closeAddToCartModalBtn">×</span>
+        <div
+          id="addToCartModalIcon"
+          style="
+            font-size: 3rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+          "
+        >
+          ✔
+          <!-- Галочка (Checkmark) -->
+        </div>
+        <h2
+          id="addToCartModalTitle"
+          style="font-size: 1.5rem; margin-bottom: 0.75rem"
+        >
+          Товар додано до кошика!
+        </h2>
+        <p
+          id="addToCartModalMessage"
+          style="margin-bottom: 1.5rem; color: var(--text-light-color)"
+        >
+          "<span id="addedItemName">Назва товару</span>" успішно додано.
+        </p>
+        <div
+          class="modal-actions"
+          style="display: flex; justify-content: space-around; gap: 1rem"
+        >
+          <a href="cart.html" class="button button-primary" style="flex-grow: 1"
+            >Перейти в кошик</a
+          >
+          <button
+            type="button"
+            id="continueShoppingBtn"
+            class="button button-secondary"
+            style="flex-grow: 1"
+          >
+            Продовжити покупки
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Container для сповіщень (якщо використовуєте Main.showToast) -->
+    <div id="toast-container"></div>
+
+    <script src="js/auth.js"></script>
+    <!-- Має бути перед cart.js -->
+    <script src="js/cart.js"></script>
+    <script src="js/services.js"></script>
+    <!-- JS для сторінки послуг -->
+    <script src="js/main.js"></script>
+    <!-- main.js викликає Auth.init(), Cart.init() -->
+  </body>
+</html>

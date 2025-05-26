@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Рекламне Агентство "СуперКреатив" - Головна</title>
+    <link href="css/custom.css" rel="stylesheet" />
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> -->
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html" class="active">Головна</a></li>
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="services.html">Послуги</a></li>
+          <li><a href="reviews.html">Відгуки</a></li>
+          <li><a href="contact.html">Контакти</a></li>
+          <li id="auth-links-container">
+            <!-- Заповнюється auth.js -->
+          </li>
+          <li>
+            <a href="cart.html">Кошик (<span id="cart-count">0</span>)</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content-home">
+      <!-- Герой-секція -->
+      <section class="hero-section">
+        <div class="container hero-content">
+          <h1 class="hero-title">Сучасні Рекламні Рішення для Вашого Успіху</h1>
+          <p class="hero-subtitle">
+            Ми допомагаємо брендам зростати та досягати нових висот завдяки
+            креативним та ефективним рекламним кампаніям.
+          </p>
+          <a href="services.html" class="button button-primary hero-cta"
+            >Переглянути Послуги</a
+          >
+        </div>
+      </section>
+
+      <!-- Секція "Чому ми?" / Переваги -->
+      <section class="features-section container">
+        <h2 class="section-title">Чому Обирають Нас?</h2>
+        <div class="features-grid">
+          <div class="feature-item card">
+            <h3 class="feature-title">Інноваційний Підхід</h3>
+            <p>
+              Ми завжди в курсі останніх трендів та використовуємо передові
+              технології для досягнення максимальних результатів.
+            </p>
+          </div>
+          <div class="feature-item card">
+            <h3 class="feature-title">Команда Професіоналів</h3>
+            <p>
+              Наші досвідчені спеціалісти готові втілити в життя найсміливіші
+              ідеї та забезпечити високу якість послуг.
+            </p>
+          </div>
+          <div class="feature-item card">
+            <h3 class="feature-title">Вимірюваний Результат</h3>
+            <p>
+              Ми орієнтовані на конкретні показники ефективності та надаємо
+              детальну звітність по кожній кампанії.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Секція "Популярні послуги" (тизери) -->
+      <section class="popular-services-section">
+        <div class="container">
+          <h2 class="section-title">Популярні Послуги</h2>
+          <div id="popular-services-list" class="services-grid">
+            <p class="loader-text">Завантаження послуг...</p>
+          </div>
+          <div class="text-center" style="margin-top: 2rem">
+            <a href="services.html" class="button button-secondary"
+              >Всі Послуги</a
+            >
+          </div>
+        </div>
+      </section>
+
+      <!-- Секція "Відгуки" (тизери) -->
+      <section class="testimonials-section container">
+        <h2 class="section-title">Що Кажуть Наші Клієнти</h2>
+        <div id="testimonials-list" class="testimonials-grid">
+          <p class="loader-text">Завантаження відгуків...</p>
+        </div>
+        <div class="text-center" style="margin-top: 2rem">
+          <a href="reviews.html" class="button button-secondary"
+            >Читати Всі Відгуки</a
+          >
+        </div>
+      </section>
+
+      <!-- Секція Заклику до Дії (CTA) -->
+      <section class="cta-section">
+        <div class="container cta-content">
+          <h2 class="cta-title">Готові Розпочати Співпрацю?</h2>
+          <p class="cta-text">
+            Зв'яжіться з нами сьогодні, щоб обговорити ваш проект та отримати
+            індивідуальну пропозицію!
+          </p>
+          <a
+            href="contact.html"
+            class="button button-primary button-lg cta-button"
+            >Зв'язатися з Нами</a
+          >
+        </div>
+      </section>
+    </main>
+
+    <!-- МОДАЛЬНЕ ВІКНО: ТОВАР ДОДАНО ДО КОШИКА -->
+    <!-- Модальне вікно "Товар додано до кошика" -->
+    <div id="addToCartModal" class="modal item-added-modal">
+      <div
+        class="modal-content card"
+        style="max-width: 450px; text-align: center"
+      >
+        <span class="close-modal-button" id="closeAddToCartModalBtn">×</span>
+        <div
+          id="addToCartModalIcon"
+          style="
+            font-size: 3rem;
+            color: var(--success-color);
+            margin-bottom: 1rem;
+          "
+        >
+          ✔
+          <!-- Галочка (Checkmark) -->
+        </div>
+        <h2
+          id="addToCartModalTitle"
+          style="font-size: 1.5rem; margin-bottom: 0.75rem"
+        >
+          Товар додано до кошика!
+        </h2>
+        <p
+          id="addToCartModalMessage"
+          style="margin-bottom: 1.5rem; color: var(--text-light-color)"
+        >
+          "<span id="addedItemName">Назва товару</span>" успішно додано.
+        </p>
+        <div
+          class="modal-actions"
+          style="display: flex; justify-content: space-around; gap: 1rem"
+        >
+          <a href="cart.html" class="button button-primary" style="flex-grow: 1"
+            >Перейти в кошик</a
+          >
+          <button
+            type="button"
+            id="continueShoppingBtn"
+            class="button button-secondary"
+            style="flex-grow: 1"
+          >
+            Продовжити покупки
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© 2024 Рекламне Агентство "СуперКреатив". Всі права захищено.</p>
+        <p>
+          <a
+            href="admin/dashboard.html"
+            id="admin-link"
+            class="admin-panel-link"
+            style="display: none"
+            >Адмін-панель</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <!-- Cart.js має бути тут -->
+    <script src="js/home.js"></script>
+  </body>
+</html>

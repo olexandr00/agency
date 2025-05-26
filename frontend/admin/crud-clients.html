@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Клієнти</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <!-- ... (код сайдбару, з активним посиланням на "Клієнти") ... -->
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html" class="active">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Клієнтів</h1>
+          <button id="addClientBtn" class="button button-primary">
+            Додати Клієнта
+          </button>
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="clientSearchInput"
+            class="form-input"
+            placeholder="Пошук за назвою компанії, ПІБ, телефоном..."
+          />
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <!-- <th>ID</th> -->
+                <th>Назва Компанії</th>
+                <th>Прізвище К.О.</th>
+                <th>Ім'я К.О.</th>
+                <th>По батькові К.О.</th>
+                <th>Телефон К.О.</th>
+                <th>Email К.О.</th>
+                <th>Дата початку співпраці</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="clientsTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="clients-loader" class="loader-text">Завантаження клієнтів...</p>
+        <p id="clients-error" class="error-text" style="display: none"></p>
+        <p
+          id="clients-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Клієнтів не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для форми створення/редагування клієнта -->
+    <div id="clientModal" class="modal">
+      <div class="modal-content card">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Додати Клієнта</h2>
+        <form id="clientForm">
+          <input type="hidden" id="clientId" name="clientId" />
+          <div class="form-group">
+            <label for="clientCompanyName"
+              >Назва Компанії (необов'язково):</label
+            >
+            <input
+              type="text"
+              id="clientCompanyName"
+              name="clientCompanyName"
+              class="form-input"
+            />
+          </div>
+          <div class="form-grid-3-col">
+            <!-- Для ПІБ -->
+            <div class="form-group">
+              <label for="contactPersonLastName">Прізвище К.О.:</label>
+              <input
+                type="text"
+                id="contactPersonLastName"
+                name="contactPersonLastName"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="contactPersonFirstName">Ім'я К.О.:</label>
+              <input
+                type="text"
+                id="contactPersonFirstName"
+                name="contactPersonFirstName"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="contactPersonMiddleName">По батькові К.О.:</label>
+              <input
+                type="text"
+                id="contactPersonMiddleName"
+                name="contactPersonMiddleName"
+                class="form-input"
+              />
+            </div>
+          </div>
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="contactPersonPhone">Телефон К.О.:</label>
+              <input
+                type="tel"
+                id="contactPersonPhone"
+                name="contactPersonPhone"
+                class="form-input"
+                required
+                placeholder="+380XXXXXXXXX"
+              />
+            </div>
+            <div class="form-group">
+              <label for="contactPersonEmail"
+                >Email К.О. (необов'язково):</label
+              >
+              <input
+                type="email"
+                id="contactPersonEmail"
+                name="contactPersonEmail"
+                class="form-input"
+                placeholder="example@mail.com"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="cooperationStartDate">Дата початку співпраці:</label>
+            <input
+              type="date"
+              id="cooperationStartDate"
+              name="cooperationStartDate"
+              class="form-input"
+              required
+            />
+          </div>
+          <button
+            type="submit"
+            id="saveClientBtn"
+            class="button button-success"
+          >
+            Зберегти
+          </button>
+          <p id="client-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-clients.js"></script>
+  </body>
+</html>

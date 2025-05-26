@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Користувачі</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <!-- Спільні стилі для адмінки -->
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+    <!-- Стилі для CRUD сторінок -->
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <!-- ... (код сайдбару, як у dashboard.html, з активним посиланням на "Користувачі") ... -->
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html" class="active">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Користувачів</h1>
+          <button id="addUserBtn" class="button button-primary">
+            Додати Користувача
+          </button>
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="userSearchInput"
+            class="form-input"
+            placeholder="Пошук за іменем або email..."
+          />
+          <!-- Можна додати фільтр за роллю -->
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>Ім'я користувача</th>
+                <th>Email</th>
+                <th>Роль</th>
+                <th>Дата реєстрації</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- Рядки будуть додані JS -->
+              <!-- Приклад рядка:
+                        <tr>
+                            <td>1</td>
+                            <td>admin</td>
+                            <td>admin@example.com</td>
+                            <td>admin</td>
+                            <td>2024-01-01</td>
+                            <td>
+                                <button class="button button-small button-edit">Редагувати</button>
+                                <button class="button button-small button-danger button-delete">Видалити</button>
+                            </td>
+                        </tr>
+                        -->
+            </tbody>
+          </table>
+        </div>
+        <p id="users-loader" class="loader-text">
+          Завантаження користувачів...
+        </p>
+        <p id="users-error" class="error-text" style="display: none"></p>
+        <p id="users-no-results" class="no-results-text" style="display: none">
+          Користувачів не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для форми створення/редагування користувача -->
+    <div id="userModal" class="modal">
+      <div class="modal-content card">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Додати Користувача</h2>
+        <form id="userForm">
+          <input type="hidden" id="userId" name="userId" />
+          <div class="form-group">
+            <label for="username">Ім'я користувача (логін):</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              class="form-input"
+              required
+              minlength="3"
+            />
+          </div>
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="password"
+              >Пароль (залиште порожнім, щоб не змінювати):</label
+            >
+            <input
+              type="password"
+              id="password"
+              name="password"
+              class="form-input"
+              minlength="6"
+            />
+          </div>
+          <div class="form-group">
+            <label for="role">Роль:</label>
+            <select id="role" name="role" class="form-input" required>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button type="submit" id="saveUserBtn" class="button button-success">
+            Зберегти
+          </button>
+          <p id="user-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-users.js"></script>
+  </body>
+</html>

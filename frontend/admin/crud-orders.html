@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Замовлення з сайту</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+    <style>
+      /* Додаткові стилі для деталей замовлення в модалці */
+      .order-details-list {
+        list-style: none;
+        padding-left: 0;
+      }
+      .order-details-list li {
+        margin-bottom: 0.5rem;
+      }
+      .order-details-list li strong {
+        min-width: 150px;
+        display: inline-block;
+      }
+      .ordered-services-table {
+        width: 100%;
+        margin-top: 1rem;
+        border-collapse: collapse;
+      }
+      .ordered-services-table th,
+      .ordered-services-table td {
+        border: 1px solid var(--border-color);
+        padding: 0.5rem;
+        text-align: left;
+      }
+      .ordered-services-table th {
+        background-color: #f8f9fa;
+      }
+    </style>
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <!-- ... (код сайдбару, з активним посиланням на "Замовлення з сайту") ... -->
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li>
+            <a href="crud-orders.html" class="active">Замовлення з сайту</a>
+          </li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Замовлень</h1>
+          <!-- Кнопка "Додати замовлення" тут зазвичай не потрібна, вони створюються з сайту -->
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="orderSearchInput"
+            class="form-input"
+            placeholder="Пошук за № зам., іменем, email..."
+          />
+
+          <select
+            id="orderStatusFilter"
+            class="form-input"
+            style="max-width: 200px"
+          >
+            <option value="">Всі статуси</option>
+            <option value="new">Нові</option>
+            <option value="processing">В обробці</option>
+            <option value="completed">Завершені</option>
+            <option value="cancelled">Скасовані</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>Номер замовлення</th>
+                <th>Клієнт (Ім'я)</th>
+                <th>Email Клієнта</th>
+                <th>Телефон</th>
+                <th>Дата Замовлення</th>
+                <th>Сума</th>
+                <th>Статус</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="ordersTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="orders-loader" class="loader-text">Завантаження замовлень...</p>
+        <p id="orders-error" class="error-text" style="display: none"></p>
+        <p id="orders-no-results" class="no-results-text" style="display: none">
+          Замовлень не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для перегляду деталей та зміни статусу замовлення -->
+    <div id="orderModal" class="modal">
+      <div class="modal-content card" style="max-width: 700px">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">
+          Деталі Замовлення #<span id="modalOrderId"></span>
+        </h2>
+        <div id="orderDetailsContent">
+          <ul class="order-details-list">
+            <li>
+              <strong>Користувач (ID):</strong>
+              <span id="modalOrderUser"></span>
+            </li>
+            <li>
+              <strong>Ім'я клієнта:</strong>
+              <span id="modalOrderCustomerName"></span>
+            </li>
+            <li>
+              <strong>Email клієнта:</strong>
+              <span id="modalOrderCustomerEmail"></span>
+            </li>
+            <li>
+              <strong>Телефон клієнта:</strong>
+              <span id="modalOrderCustomerPhone"></span>
+            </li>
+            <li>
+              <strong>Дата замовлення:</strong>
+              <span id="modalOrderDate"></span>
+            </li>
+            <li>
+              <strong>Загальна сума:</strong>
+              <span id="modalOrderTotalAmount"></span> грн
+            </li>
+            <li>
+              <strong>Примітки клієнта:</strong>
+              <p
+                id="modalOrderCustomerNotes"
+                style="
+                  white-space: pre-wrap;
+                  background: #f9f9f9;
+                  padding: 0.5em;
+                  border-radius: 4px;
+                "
+              ></p>
+            </li>
+          </ul>
+
+          <h3
+            style="margin-top: 1.5rem; margin-bottom: 0.5rem; font-size: 1.2rem"
+          >
+            Замовлені послуги:
+          </h3>
+          <div class="table-responsive">
+            <table class="ordered-services-table">
+              <thead>
+                <tr>
+                  <th>Назва Послуги</th>
+                  <th>Кількість</th>
+                  <th>Ціна за од. (на момент замовлення)</th>
+                  <th>Сума</th>
+                </tr>
+              </thead>
+              <tbody id="modalOrderedServicesBody">
+                <!-- Заповнюється JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <form id="orderStatusForm" style="margin-top: 1.5rem">
+          <input type="hidden" id="orderIdHidden" name="orderIdHidden" />
+          <div class="form-group">
+            <label for="modalOrderStatus">Змінити статус замовлення:</label>
+            <select id="modalOrderStatus" name="status" class="form-input">
+              <option value="new">Нове</option>
+              <option value="processing">В обробці</option>
+              <option value="completed">Завершено</option>
+              <option value="cancelled">Скасовано</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            id="saveOrderStatusBtn"
+            class="button button-success"
+          >
+            Зберегти Статус
+          </button>
+          <p id="order-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-orders.js"></script>
+  </body>
+</html>

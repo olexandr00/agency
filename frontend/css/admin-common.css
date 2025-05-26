@@ -1,0 +1,121 @@
+/* frontend/css/admin-common.css */
+body.admin-page-body {
+  /* Додамо цей клас до <body> адмін сторінок */
+  display: flex;
+  min-height: 100vh;
+  background-color: #f0f2f5;
+  margin: 0; /* Переконатись, що немає відступів за замовчуванням */
+  font-family: var(--font-family-sans); /* Використовуємо змінні з custom.css */
+}
+
+.admin-sidebar {
+  width: 260px;
+  background-color: var(--dark-color);
+  color: #e0e0e0;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0; /* Щоб сайдбар не стискався */
+}
+/* ... (решта стилів для сайдбару з dashboard.html) ... */
+.admin-sidebar .admin-logo a {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: rgb(192, 36, 36);
+  display: block;
+  text-align: center;
+  margin-bottom: 2rem;
+  text-decoration: none;
+}
+.admin-nav ul {
+  list-style: none;
+  padding: 0;
+}
+.admin-nav li a {
+  display: block;
+  padding: 0.85rem 1rem;
+  color: #bdc3c7;
+  text-decoration: none;
+  border-radius: var(--border-radius);
+  margin-bottom: 0.5rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+.admin-nav li a:hover,
+.admin-nav li a.active {
+  background-color: var(--primary-color);
+  color: var(--surface-color);
+}
+
+.admin-main-content {
+  flex-grow: 1;
+  padding: 0; /* Заберемо padding тут, щоб хедер був на всю ширину */
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem; /* Повертаємо padding сюди */
+  background-color: var(--surface-color);
+  box-shadow: var(--box-shadow);
+  flex-shrink: 0; /* Щоб хедер не стискався */
+}
+.admin-header .current-page-title h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin: 0;
+}
+.admin-header .user-info {
+  display: flex;
+  align-items: center;
+}
+.admin-header .user-info span {
+  margin-right: 1rem;
+  font-size: 0.9rem;
+}
+.admin-header .user-info .button {
+  /* Якщо кнопка виходу тут */
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.content-area {
+  /* Додамо цей клас для основного вмісту під хедером */
+  padding: 2rem;
+  flex-grow: 1;
+}
+
+.content-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+.content-header h1 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+/* Стилі для віджетів дашборду (якщо вони тут) */
+.dashboard-widgets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.widget h3 {
+  font-size: 1rem;
+  color: var(--text-light-color);
+  margin-bottom: 0.5rem;
+}
+.widget .widget-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+}

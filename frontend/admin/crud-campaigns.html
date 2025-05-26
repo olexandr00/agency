@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Кампанії</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+    <style>
+      /* Додаткові стилі для управління зв'язаними сутностями в модалці */
+      .related-entity-list {
+        list-style: none;
+        padding-left: 0;
+        max-height: 150px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        padding: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .related-entity-list li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        border-bottom: 1px solid #eee;
+      }
+      .related-entity-list li:last-child {
+        border-bottom: none;
+      }
+      .related-entity-list .quantity-input-small {
+        width: 60px !important;
+        padding: 0.25rem 0.5rem !important;
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+      }
+      .form-section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        margin-bottom: 0.75rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+      }
+    </style>
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html" class="active">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Кампаній</h1>
+          <button id="addCampaignBtn" class="button button-primary">
+            Додати Кампанію
+          </button>
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="campaignSearchInput"
+            class="form-input"
+            placeholder="Пошук за назвою, клієнтом..."
+          />
+          <select id="statusFilter" class="form-input" style="max-width: 200px">
+            <option value="">Всі статуси</option>
+            <option value="Planned">Запланована</option>
+            <option value="Active">Активна</option>
+            <option value="Completed">Завершена</option>
+            <option value="Cancelled">Скасована</option>
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>Назва Кампанії</th>
+                <th>Клієнт</th>
+                <th>Відповідальний</th>
+                <th>Дати (Старт-Кінець)</th>
+                <th>Бюджет</th>
+                <th>Статус</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="campaignsTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="campaigns-loader" class="loader-text">
+          Завантаження кампаній...
+        </p>
+        <p id="campaigns-error" class="error-text" style="display: none"></p>
+        <p
+          id="campaigns-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Кампаній не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для форми створення/редагування кампанії -->
+    <div id="campaignModal" class="modal">
+      <div class="modal-content card" style="max-width: 750px">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Додати Кампанію</h2>
+        <form id="campaignForm">
+          <input type="hidden" id="campaignId" name="campaignId" />
+
+          <h3 class="form-section-title">Основна інформація</h3>
+          <div class="form-group">
+            <label for="campaignName">Назва Кампанії:</label>
+            <input
+              type="text"
+              id="campaignName"
+              name="campaignName"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="clientId">Клієнт:</label>
+              <select id="clientId" name="clientId" class="form-input" required>
+                <option value="">Оберіть клієнта...</option>
+                <!-- Завантажується JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="responsibleEmployeeId"
+                >Відповідальний працівник:</label
+              >
+              <select
+                id="responsibleEmployeeId"
+                name="responsibleEmployeeId"
+                class="form-input"
+              >
+                <option value="">Не призначено</option>
+                <!-- Завантажується JS -->
+              </select>
+            </div>
+          </div>
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="startDate">Дата початку:</label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                class="form-input"
+              />
+            </div>
+            <div class="form-group">
+              <label for="endDate">Дата закінчення:</label>
+              <input
+                type="date"
+                id="endDate"
+                name="endDate"
+                class="form-input"
+              />
+            </div>
+          </div>
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="campaignBudget">Бюджет (грн):</label>
+              <input
+                type="number"
+                id="campaignBudget"
+                name="campaignBudget"
+                class="form-input"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+              />
+            </div>
+            <div class="form-group">
+              <label for="campaignStatus">Статус:</label>
+              <select
+                id="campaignStatus"
+                name="campaignStatus"
+                class="form-input"
+                required
+              >
+                <option value="Planned">Запланована</option>
+                <option value="Active">Активна</option>
+                <option value="Completed">Завершена</option>
+                <option value="Cancelled">Скасована</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="campaignDescription">Опис Кампанії:</label>
+            <textarea
+              id="campaignDescription"
+              name="campaignDescription"
+              class="form-input"
+              rows="3"
+            ></textarea>
+          </div>
+
+          <!-- Секція Послуги в кампанії (тільки в режимі редагування) -->
+          <div id="campaignServicesSection" style="display: none">
+            <h3 class="form-section-title">Послуги в Кампанії</h3>
+            <div
+              class="form-grid-2-col"
+              style="align-items: flex-end; margin-bottom: 1rem"
+            >
+              <div class="form-group">
+                <label for="selectServiceToAdd">Додати послугу:</label>
+                <select id="selectServiceToAdd" class="form-input">
+                  <option value="">Оберіть послугу...</option>
+                  <!-- Завантажується JS (всі доступні послуги) -->
+                </select>
+              </div>
+              <div
+                class="form-group"
+                style="display: flex; align-items: center; gap: 0.5rem"
+              >
+                <label
+                  for="serviceQuantity"
+                  style="white-space: nowrap; margin-bottom: 0"
+                  >К-сть:</label
+                >
+                <input
+                  type="number"
+                  id="serviceQuantity"
+                  value="1"
+                  min="1"
+                  class="form-input"
+                  style="width: 70px"
+                />
+                <button
+                  type="button"
+                  id="addServiceToCampaignBtn"
+                  class="button button-small"
+                >
+                  Додати
+                </button>
+              </div>
+            </div>
+            <ul id="campaignServicesList" class="related-entity-list">
+              <!-- Список послуг кампанії -->
+            </ul>
+          </div>
+
+          <!-- Секція Призначені працівники ВИДАЛЕНА -->
+
+          <button
+            type="submit"
+            id="saveCampaignBtn"
+            class="button button-success"
+            style="margin-top: 1.5rem"
+          >
+            Зберегти Кампанію
+          </button>
+          <p id="campaign-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-campaigns.js"></script>
+  </body>
+</html>

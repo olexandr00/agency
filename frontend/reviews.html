@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Відгуки - Рекламне Агентство</title>
+    <link href="css/custom.css" rel="stylesheet" />
+  </head>
+  <body>
+    <header class="site-header">
+      <!-- ... (код хедера, скопіюйте з index.html) ... -->
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Головна</a></li>
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="services.html">Послуги</a></li>
+          <li><a href="reviews.html" class="active">Відгуки</a></li>
+          <li><a href="contact.html">Контакти</a></li>
+          <li id="auth-links-container">
+            <!-- Заповнюється auth.js -->
+          </li>
+          <li>
+            <a href="cart.html">Кошик (<span id="cart-count">0</span>)</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content container">
+      <h1 class="page-title">Відгуки Наших Клієнтів</h1>
+
+      <!-- Форма для додавання відгуку (для авторизованих) -->
+      <section
+        id="add-review-section"
+        class="card"
+        style="margin-bottom: 2.5rem; display: none"
+      >
+        <h2>Залишити відгук</h2>
+        <form id="add-review-form">
+          <div class="form-group">
+            <label for="reviewService">Послуга (необов'язково):</label>
+            <select id="reviewService" name="serviceId" class="form-input">
+              <option value="">Загальний відгук про агентство</option>
+              <!-- Сюди завантажимо список послуг через JS -->
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reviewRating">Оцінка (1-5):</label>
+            <select id="reviewRating" name="rating" class="form-input">
+              <option value="">Без оцінки</option>
+              <option value="5">5 - Відмінно</option>
+              <option value="4">4 - Добре</option>
+              <option value="3">3 - Задовільно</option>
+              <option value="2">2 - Погано</option>
+              <option value="1">1 - Жахливо</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="reviewText">Ваш відгук:</label>
+            <textarea
+              id="reviewText"
+              name="reviewText"
+              class="form-input"
+              rows="5"
+              required
+            ></textarea>
+          </div>
+          <button type="submit" class="button button-primary">
+            Відправити відгук
+          </button>
+          <p id="add-review-message" class="form-message"></p>
+        </form>
+      </section>
+      <p
+        id="login-to-review-message"
+        class="info-text"
+        style="text-align: center; margin-bottom: 2rem; display: none"
+      >
+        Щоб залишити відгук, будь ласка, <a href="login.html">увійдіть</a> або
+        <a href="register.html">зареєструйтеся</a>.
+      </p>
+
+      <!-- Список відгуків -->
+      <section id="reviews-list-container">
+        <h2 style="font-size: 1.75rem; margin-bottom: 1.5rem; text-align: left">
+          Всі відгуки:
+        </h2>
+        <div id="reviews-list" class="reviews-grid">
+          <!-- Сюди будуть завантажуватися картки відгуків -->
+          <p id="reviews-loader" class="loader-text">
+            Завантаження відгуків...
+          </p>
+          <p id="reviews-error" class="error-text" style="display: none"></p>
+          <p
+            id="reviews-no-results"
+            class="no-results-text"
+            style="display: none"
+          >
+            Відгуків ще немає.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© 2024 Рекламне Агентство "СуперКреатив". Всі права захищено.</p>
+        <p>
+          <a
+            href="admin/dashboard.html"
+            id="admin-link"
+            class="admin-panel-link"
+            style="display: none"
+            >Адмін-панель</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/cart.js"></script>
+    <script src="js/reviews.js"></script>
+    <!-- Специфічний JS для цієї сторінки -->
+  </body>
+</html>

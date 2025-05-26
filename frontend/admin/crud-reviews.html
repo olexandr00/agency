@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Відгуки</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+    <style>
+      .review-text-cell {
+        max-width: 300px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .review-text-cell:hover {
+        white-space: normal;
+        overflow: visible;
+      } /* Показати повний текст при наведенні */
+      .status-approved {
+        color: var(--success-color);
+        font-weight: bold;
+      }
+      .status-pending {
+        color: var(--warning-color);
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body class="admin-page-body">
+    <aside class="admin-sidebar">
+      <!-- ... (код сайдбару, з активним посиланням на "Відгуки") ... -->
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html" class="active">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється JS -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Відгуків</h1>
+          <!-- Кнопка "Додати відгук" тут не потрібна, адміни можуть додавати через основний сайт, якщо треба -->
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="reviewSearchInput"
+            class="form-input"
+            placeholder="Пошук за текстом, автором, послугою..."
+          />
+          <select
+            id="approvalStatusFilter"
+            class="form-input"
+            style="max-width: 200px"
+          >
+            <option value="">Всі статуси</option>
+            <option value="1">Схвалені</option>
+            <option value="0">На модерації</option>
+          </select>
+          <select
+            id="serviceFilter"
+            class="form-input"
+            style="max-width: 250px"
+          >
+            <option value="">Всі послуги</option>
+            <!-- Завантажується JS -->
+          </select>
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>Автор</th>
+                <th>Послуга</th>
+                <th>Текст відгуку</th>
+                <th>Рейтинг</th>
+                <th>Дата</th>
+                <th>Статус</th>
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="reviewsTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="reviews-loader" class="loader-text">Завантаження відгуків...</p>
+        <p id="reviews-error" class="error-text" style="display: none"></p>
+        <p
+          id="reviews-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Відгуків не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для перегляду/редагування повного тексту відгуку (опціонально) -->
+    <div id="reviewModal" class="modal">
+      <div class="modal-content card">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Деталі Відгуку</h2>
+        <form id="reviewForm">
+          <!-- Якщо буде редагування -->
+          <input type="hidden" id="reviewId" name="reviewId" />
+          <div class="form-group">
+            <label>Автор:</label>
+            <p id="modalReviewAuthor" class="form-static-text"></p>
+          </div>
+          <div class="form-group">
+            <label>Послуга:</label>
+            <p id="modalReviewService" class="form-static-text"></p>
+          </div>
+          <div class="form-group">
+            <label>Дата:</label>
+            <p id="modalReviewDate" class="form-static-text"></p>
+          </div>
+          <div class="form-group">
+            <label>Рейтинг:</label>
+            <p id="modalReviewRating" class="form-static-text"></p>
+          </div>
+          <div class="form-group">
+            <label for="modalReviewText">Текст Відгуку:</label>
+            <textarea
+              id="modalReviewText"
+              name="modalReviewText"
+              class="form-input"
+              rows="6"
+              readonly
+            ></textarea>
+            <!-- readonly, якщо не редагуємо, або зняти для редагування -->
+          </div>
+          <div class="form-group">
+            <label for="modalReviewStatus">Статус:</label>
+            <select id="modalReviewStatus" name="isApproved" class="form-input">
+              <option value="1">Схвалено</option>
+              <option value="0">На модерації</option>
+            </select>
+          </div>
+          <button
+            type="button"
+            id="saveReviewChangesBtn"
+            class="button button-success"
+          >
+            Зберегти зміни статусу
+          </button>
+          <p id="review-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-reviews.js"></script>
+  </body>
+</html>

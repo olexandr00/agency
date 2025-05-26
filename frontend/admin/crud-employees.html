@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Адмін-панель - Працівники</title>
+    <link href="../css/custom.css" rel="stylesheet" />
+    <!-- Ваш основний файл стилів -->
+    <link href="../css/admin-common.css" rel="stylesheet" />
+    <!-- Спільні стилі для адмінки -->
+    <link href="../css/admin-crud.css" rel="stylesheet" />
+    <!-- Стилі для CRUD сторінок (таблиці, модалки) -->
+    <style>
+      /* Додаткові стилі, якщо потрібні саме для цієї сторінки */
+      .employee-photo-thumbnail {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        vertical-align: middle;
+        border: 1px solid var(--border-color);
+      }
+      .current-photo-preview {
+        display: block;
+        max-width: 120px;
+        max-height: 120px;
+        margin-top: 8px;
+        border: 1px solid var(--border-color);
+        padding: 4px;
+        border-radius: var(--border-radius);
+      }
+      .form-group.photo-upload-group {
+        margin-top: 1rem;
+        padding: 1rem;
+        background-color: #f8f9fa;
+        border-radius: var(--border-radius);
+      }
+      #currentPhotoContainer label {
+        font-weight: normal;
+        font-size: 0.9em;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+      }
+      #currentPhotoContainer input[type="checkbox"] {
+        margin-right: 0.5rem;
+        width: auto;
+        box-shadow: none;
+      }
+      .dismissed-employee-row td {
+        /* Стиль для звільнених */
+        color: var(
+          --text-light-color
+        ) !important; /* Важливо, щоб перебити інші стилі */
+        font-style: italic;
+        /* text-decoration: line-through; */ /* Опціонально */
+      }
+      .dismissed-employee-row:hover {
+        background-color: #fff5f5 !important; /* Легкий червонуватий фон при наведенні */
+      }
+    </style>
+  </head>
+  <body class="admin-page-body">
+    <!-- Додаємо клас для спільних стилів адмінки -->
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <a href="../index.html">На сайт</a>
+      </div>
+      <nav class="admin-nav">
+        <ul>
+          <li><a href="dashboard.html">Дашборд</a></li>
+          <li><a href="crud-users.html">Користувачі</a></li>
+          <li><a href="crud-services.html">Послуги</a></li>
+          <li><a href="crud-employees.html" class="active">Працівники</a></li>
+          <li><a href="crud-positions.html">Посади</a></li>
+          <li><a href="crud-clients.html">Клієнти</a></li>
+          <li><a href="crud-campaigns.html">Кампанії</a></li>
+          <li><a href="crud-reviews.html">Відгуки</a></li>
+          <li><a href="crud-orders.html">Замовлення з сайту</a></li>
+          <li><a href="crud-messages.html">Повідомлення</a></li>
+          <li><hr style="border-color: #4f5b62; margin: 1rem 0" /></li>
+          <li><a href="#" id="admin-logout-button">Вихід</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="admin-main-content">
+      <header class="admin-header">
+        <div class="current-page-title">
+          <h2>Адмін-панель</h2>
+        </div>
+        <div class="user-info" id="admin-user-info">
+          <!-- Заповнюється admin-main.js -->
+        </div>
+      </header>
+
+      <section class="content-area">
+        <div class="content-header">
+          <h1>Список Працівників</h1>
+          <button id="addEmployeeBtn" class="button button-primary">
+            Додати Працівника
+          </button>
+        </div>
+
+        <div class="search-filter-bar">
+          <input
+            type="text"
+            id="employeeSearchInput"
+            class="form-input"
+            placeholder="Пошук за ПІБ, email або посадою..."
+          />
+        </div>
+
+        <div class="table-responsive">
+          <table class="crud-table">
+            <thead>
+              <tr>
+                <th>Фото</th>
+                <th>Прізвище</th>
+                <th>Ім'я</th>
+                <!-- <th>По батькові</th> Прибрали для компактності -->
+                <th>Посада</th>
+                <th>Телефон</th>
+                <!-- <th>Email</th> Прибрали для компактності -->
+                <!-- <th>Дата прийому</th> Прибрали для компактності -->
+                <!-- <th>Зарплата</th> Прибрали для компактності -->
+                <th>Статус</th>
+                <!-- Буде "Активний" або "Звільнений [дата]" -->
+                <th>Дії</th>
+              </tr>
+            </thead>
+            <tbody id="employeesTableBody">
+              <!-- Рядки будуть додані JS -->
+            </tbody>
+          </table>
+        </div>
+        <p id="employees-loader" class="loader-text" style="display: none">
+          Завантаження працівників...
+        </p>
+        <p id="employees-error" class="error-text" style="display: none"></p>
+        <p
+          id="employees-no-results"
+          class="no-results-text"
+          style="display: none"
+        >
+          Працівників не знайдено.
+        </p>
+      </section>
+    </main>
+
+    <!-- Модальне вікно для форми створення/редагування працівника -->
+    <div id="employeeModal" class="modal">
+      <!-- Залишаємо display:none за замовчуванням, JS буде керувати класом .active -->
+      <div class="modal-content card">
+        <span class="close-modal-button">×</span>
+        <h2 id="modalTitle">Додати Працівника</h2>
+        <form id="employeeForm" enctype="multipart/form-data">
+          <!-- enctype для завантаження файлів -->
+          <input type="hidden" id="employeeId" name="employeeId" />
+
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="lastName"
+                >Прізвище:<span class="required-asterisk">*</span></label
+              >
+              <input
+                type="text"
+                id="lastName"
+                name="lastName"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="firstName"
+                >Ім'я:<span class="required-asterisk">*</span></label
+              >
+              <input
+                type="text"
+                id="firstName"
+                name="firstName"
+                class="form-input"
+                required
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="middleName">По батькові:</label>
+            <input
+              type="text"
+              id="middleName"
+              name="middleName"
+              class="form-input"
+            />
+          </div>
+          <div class="form-group">
+            <label for="positionId"
+              >Посада:<span class="required-asterisk">*</span></label
+            >
+            <select
+              id="positionId"
+              name="positionId"
+              class="form-input"
+              required
+            >
+              <option value="">Оберіть посаду...</option>
+              <!-- Сюди завантажимо список посад через JS -->
+            </select>
+          </div>
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="phone"
+                >Телефон:<span class="required-asterisk">*</span></label
+              >
+              <input
+                type="tel"
+                id="phone"
+                name="phone"
+                class="form-input"
+                required
+                placeholder="+380XXXXXXXXX"
+              />
+            </div>
+            <div class="form-group">
+              <label for="email">Email:</label>
+              <input
+                type="email"
+                id="email"
+                name="email"
+                class="form-input"
+                placeholder="example@mail.com"
+              />
+            </div>
+          </div>
+          <div class="form-grid-2-col">
+            <div class="form-group">
+              <label for="hireDate"
+                >Дата прийому на роботу:<span class="required-asterisk"
+                  >*</span
+                ></label
+              >
+              <input
+                type="date"
+                id="hireDate"
+                name="hireDate"
+                class="form-input"
+                required
+              />
+            </div>
+            <div class="form-group">
+              <label for="salary"
+                >Заробітна плата (грн):<span class="required-asterisk"
+                  >*</span
+                ></label
+              >
+              <input
+                type="number"
+                id="salary"
+                name="salary"
+                class="form-input"
+                required
+                min="0"
+                step="0.01"
+              />
+            </div>
+          </div>
+          <div class="form-group">
+            <label for="dismissalDate">Дата звільнення (якщо є):</label>
+            <input
+              type="date"
+              id="dismissalDate"
+              name="dismissalDate"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group photo-upload-group">
+            <label for="employeePhotoFile"
+              >Фото працівника (до 5MB, jpg/png/gif/webp):</label
+            >
+            <input
+              type="file"
+              id="employeePhotoFile"
+              name="employeePhotoFile"
+              class="form-input"
+              accept="image/jpeg,image/png,image/gif,image/webp"
+            />
+            <div
+              id="currentPhotoContainer"
+              style="margin-top: 10px; display: none"
+            >
+              <p style="font-size: 0.9em; margin-bottom: 5px">Поточне фото:</p>
+              <img
+                id="currentPhotoPreview"
+                src="#"
+                alt="Поточне фото"
+                class="current-photo-preview"
+              />
+              <label style="display: block; margin-top: 5px">
+                <input
+                  type="checkbox"
+                  id="removePhotoCheckbox"
+                  name="removePhoto"
+                  value="true"
+                />
+                Видалити поточне фото при збереженні
+              </label>
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            id="saveEmployeeBtn"
+            class="button button-success"
+            style="width: 100%; margin-top: 1.5rem"
+          >
+            Зберегти
+          </button>
+          <p id="employee-form-message" class="form-message"></p>
+        </form>
+      </div>
+    </div>
+
+    <script src="../js/auth.js"></script>
+    <script src="../js/admin/admin-main.js"></script>
+    <script src="../js/admin/crud-employees.js"></script>
+  </body>
+</html>

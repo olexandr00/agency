@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Кошик - Рекламне Агентство</title>
+    <link href="css/custom.css" rel="stylesheet" />
+    <style>
+      /* Додаткові стилі, якщо потрібні саме для цієї сторінки */
+      .order-history-item {
+        border-left: 4px solid var(--secondary-color);
+        padding-left: 1rem;
+      }
+      .order-history-item h4 span {
+        font-weight: normal;
+      }
+    </style>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="main-navigation container">
+        <div class="logo">
+          <a href="index.html">СуперКреатив</a>
+        </div>
+        <ul class="nav-links">
+          <li><a href="index.html">Головна</a></li>
+          <li><a href="about.html">Про нас</a></li>
+          <li><a href="services.html">Послуги</a></li>
+          <li><a href="reviews.html">Відгуки</a></li>
+          <li><a href="contact.html">Контакти</a></li>
+          <li id="auth-links-container">
+            <!-- Заповнюється auth.js -->
+          </li>
+          <li>
+            <a href="cart.html" class="active"
+              >Кошик (<span id="cart-count">0</span>)</a
+            >
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="main-content container">
+      <h1 class="page-title">Ваш Кошик</h1>
+
+      <div id="cart-items-container">
+        <!-- Сюди будуть завантажуватися товари з кошика -->
+        <!-- <p id="cart-empty-message" class="info-text" style="text-align: center;">Ваш кошик порожній.</p> -->
+        <!-- JS сам створить цей елемент, якщо потрібно -->
+      </div>
+
+      <div
+        id="cart-summary"
+        class="card"
+        style="margin-top: 2rem; display: none"
+      >
+        <h2 style="font-size: 1.5rem; margin-bottom: 1rem">
+          Підсумок замовлення
+        </h2>
+        <p id="cart-total-price" style="font-size: 1.25rem; font-weight: bold">
+          Загальна сума: 0.00 грн
+        </p>
+      </div>
+
+      <div id="checkout-form-container" style="margin-top: 2rem; display: none">
+        <h2
+          style="font-size: 1.75rem; margin-bottom: 1.5rem; text-align: center"
+        >
+          Оформлення замовлення
+        </h2>
+        <form id="checkout-form" class="card">
+          <p
+            class="auth-required-message"
+            style="
+              margin-bottom: 1rem;
+              font-size: 0.9rem;
+              color: var(--text-light-color);
+              display: none;
+            "
+          >
+            Для оформлення замовлення, будь ласка,
+            <a href="login.html">увійдіть</a> або
+            <a href="register.html">зареєструйтеся</a>.
+          </p>
+          <div
+            id="user-info-for-checkout"
+            style="
+              display: none;
+              margin-bottom: 1rem;
+              padding: 0.75rem;
+              background-color: #e9f5ff;
+              border-left: 4px solid var(--primary-color);
+              border-radius: var(--border-radius);
+            "
+          >
+            <p style="margin: 0">
+              Ви оформлюєте замовлення як:
+              <strong id="checkout-username"></strong> (<span
+                id="checkout-email"
+              ></span
+              >)
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="customerName">Ваше ім'я (ПІБ):</label>
+            <input
+              type="text"
+              id="customerName"
+              name="customerName"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="customerEmail">Ваш Email:</label>
+            <input
+              type="email"
+              id="customerEmail"
+              name="customerEmail"
+              class="form-input"
+              required
+            />
+          </div>
+          <div class="form-group">
+            <label for="customerPhone">Ваш телефон:</label>
+            <input
+              type="tel"
+              id="customerPhone"
+              name="customerPhone"
+              class="form-input"
+              required
+              placeholder="+380XXXXXXXXX"
+            />
+          </div>
+          <div class="form-group">
+            <label for="customerNotes"
+              >Примітки до замовлення (необов'язково):</label
+            >
+            <textarea
+              id="customerNotes"
+              name="customerNotes"
+              class="form-input"
+              rows="3"
+            ></textarea>
+          </div>
+          <button
+            type="submit"
+            id="submit-checkout-button"
+            class="button button-success"
+            style="
+              width: 100%;
+              padding: 0.75rem;
+              font-size: 1.1rem;
+              margin-top: 1rem;
+            "
+          >
+            Оформити замовлення
+          </button>
+          <p id="checkout-message" class="form-message"></p>
+        </form>
+      </div>
+
+      <!-- Історія замовлень -->
+      <section
+        id="order-history-section"
+        style="margin-top: 3rem; display: none"
+      >
+        <h2
+          class="section-title"
+          style="
+            font-size: 1.75rem;
+            margin-bottom: 1.5rem;
+            text-align: left;
+            border-bottom: none;
+            padding-bottom: 0;
+          "
+        >
+          Історія Ваших Замовлень
+        </h2>
+        <p
+          class="auth-required-message-history"
+          style="
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: var(--text-light-color);
+            display: none;
+            text-align: center;
+          "
+        >
+          Щоб переглянути історію замовлень, будь ласка,
+          <a href="login.html">увійдіть</a>.
+        </p>
+        <div id="order-history-list">
+          <p
+            id="order-history-loader"
+            class="loader-text"
+            style="display: none"
+          >
+            Завантаження історії замовлень...
+          </p>
+          <p
+            id="order-history-error"
+            class="error-text"
+            style="display: none"
+          ></p>
+          <p
+            id="order-history-no-results"
+            class="no-results-text"
+            style="display: none; text-align: center"
+          >
+            У вас ще немає замовлень.
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>© 2024 Рекламне Агентство "СуперКреатив". Всі права захищено.</p>
+        <p>
+          <a
+            href="admin/dashboard.html"
+            id="admin-link"
+            class="admin-panel-link"
+            style="display: none"
+            >Адмін-панель</a
+          >
+        </p>
+      </div>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <!-- Має бути перед cart.js, якщо Cart.js використовує Auth -->
+    <script src="js/cart.js"></script>
+    <script src="js/main.js"></script>
+    <!-- main.js викликає Cart.init() та Auth.init() -->
+  </body>
+</html>
