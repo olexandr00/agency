@@ -7,10 +7,39 @@
     <link href="../css/custom.css" rel="stylesheet" />
     <link href="../css/admin-common.css" rel="stylesheet" />
     <link href="../css/admin-crud.css" rel="stylesheet" />
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
-      <!-- ... (код сайдбару, з активним посиланням на "Посади") ... -->
       <div class="admin-logo">
         <a href="../index.html">На сайт</a>
       </div>
@@ -63,7 +92,6 @@
           <table class="crud-table">
             <thead>
               <tr>
-                <!-- <th>ID</th> -->
                 <th>Назва Посади</th>
                 <th>Опис</th>
                 <th>Базова Ставка</th>

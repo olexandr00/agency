@@ -13,11 +13,10 @@ const flexibleAuth = async (req, res, next) => {
     }
   } else {
   }
-  next(); // Завжди викликаємо next(), щоб запит йшов далі
+  next(); // щоб запит йшов далі
 };
 
 const isAuthenticated = async (req, res, next) => {
-  // Цей залишається строгим
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({
@@ -43,7 +42,7 @@ const isAdmin = (req, res, next) => {
 };
 
 module.exports = {
-  isAuthenticated, // Строгий
+  isAuthenticated,
   isAdmin,
-  flexibleAuth, // Гнучкий
+  flexibleAuth,
 };

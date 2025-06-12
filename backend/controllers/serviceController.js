@@ -4,34 +4,64 @@ const Service = require("../models/Service");
 const serviceController = {
   createService: async (req, res, next) => {
     try {
-      const { serviceName, serviceDescription, basePrice } = req.body;
-      if (!serviceName || basePrice === undefined) {
-        // basePrice може бути 0, тому перевіряємо на undefined
-        return res
-          .status(400)
-          .json({ message: "Service name and base price are required." });
+      let { serviceName, serviceDescription, basePrice } = req.body;
+
+      // Обрізаємо пробіли та перевіряємо
+      serviceName = serviceName ? String(serviceName).trim() : "";
+      if (serviceDescription !== undefined && serviceDescription !== null) {
+        serviceDescription = String(serviceDescription).trim();
+        if (serviceDescription === "") serviceDescription = null; // Порожній рядок після trim -> null
+      } else {
+        serviceDescription = null; // Якщо не передано, то null
       }
+
       if (
-        isNaN(parseFloat(basePrice)) ||
-        !isFinite(basePrice) ||
-        parseFloat(basePrice) < 0
+        !serviceName ||
+        basePrice === undefined ||
+        basePrice === null ||
+        String(basePrice).trim() === ""
+      ) {
+        return res.status(400).json({
+          message:
+            "Назва послуги (не може бути порожньою або тільки з пробілів) та базова ціна є обов'язковими.",
+        });
+      }
+
+      const parsedBasePrice = parseFloat(basePrice);
+      if (
+        isNaN(parsedBasePrice) ||
+        !isFinite(parsedBasePrice) ||
+        parsedBasePrice < 0
       ) {
         return res
           .status(400)
-          .json({ message: "Base price must be a non-negative number." });
+          .json({ message: "Базова ціна має бути невід'ємним числом." });
       }
 
       const newService = await Service.create({
-        serviceName,
-        serviceDescription,
-        basePrice: parseFloat(basePrice),
+        serviceName, // Вже обрізаний
+        serviceDescription, // Вже обрізаний або null
+        basePrice: parsedBasePrice,
       });
       res
         .status(201)
-        .json({ message: "Service created successfully", service: newService });
+        .json({ message: "Послугу успішно створено", service: newService });
     } catch (error) {
-      if (error.message.includes("already exists")) {
-        return res.status(409).json({ message: error.message });
+      if (
+        error.message &&
+        typeof error.message === "string" &&
+        (error.message.toLowerCase().includes("already exists") ||
+          error.message.includes("вже існує"))
+      ) {
+        return res.status(409).json({ message: error.message }); // Повертаємо повідомлення з моделі
+      }
+      // Модель вже кидає специфічні помилки валідації, які можна просто передати далі
+      if (
+        error.message &&
+        (error.message.includes("Назва послуги є обов'язковою") ||
+          error.message.includes("Базова ціна (BasePrice) має бути"))
+      ) {
+        return res.status(400).json({ message: error.message });
       }
       next(error);
     }
@@ -39,7 +69,7 @@ const serviceController = {
 
   getAllServices: async (req, res, next) => {
     try {
-      const { search } = req.query; // Для пошуку
+      const { search } = req.query;
       const services = await Service.getAll(search);
       res.status(200).json(services);
     } catch (error) {
@@ -52,7 +82,7 @@ const serviceController = {
       const { id } = req.params;
       const service = await Service.findById(id);
       if (!service) {
-        return res.status(404).json({ message: "Service not found." });
+        return res.status(404).json({ message: "Послугу не знайдено." });
       }
       res.status(200).json(service);
     } catch (error) {
@@ -63,60 +93,98 @@ const serviceController = {
   updateService: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const { serviceName, serviceDescription, basePrice } = req.body;
+      let { serviceName, serviceDescription, basePrice } = req.body;
 
       const updateData = {};
-      if (serviceName !== undefined) updateData.serviceName = serviceName;
-      if (serviceDescription !== undefined)
-        updateData.serviceDescription = serviceDescription;
+
+      if (serviceName !== undefined) {
+        const trimmedServiceName = String(serviceName).trim();
+        if (!trimmedServiceName) {
+          return res.status(400).json({
+            message:
+              "Назва послуги не може бути порожньою або складатися лише з пробілів при оновленні.",
+          });
+        }
+        updateData.serviceName = trimmedServiceName;
+      }
+
+      if (serviceDescription !== undefined) {
+        if (serviceDescription === null) {
+          updateData.serviceDescription = null;
+        } else {
+          const trimmedServiceDescription = String(serviceDescription).trim();
+          updateData.serviceDescription =
+            trimmedServiceDescription === "" ? null : trimmedServiceDescription;
+        }
+      }
+
       if (basePrice !== undefined) {
+        if (basePrice === null || String(basePrice).trim() === "") {
+          return res.status(400).json({
+            message:
+              "Базова ціна є обов'язковою і не може бути порожньою при оновленні.",
+          });
+        }
+        const parsedBasePrice = parseFloat(basePrice);
         if (
-          isNaN(parseFloat(basePrice)) ||
-          !isFinite(basePrice) ||
-          parseFloat(basePrice) < 0
+          isNaN(parsedBasePrice) ||
+          !isFinite(parsedBasePrice) ||
+          parsedBasePrice < 0
         ) {
           return res
             .status(400)
-            .json({ message: "Base price must be a non-negative number." });
+            .json({ message: "Базова ціна має бути невід'ємним числом." });
         }
-        updateData.basePrice = parseFloat(basePrice);
+        updateData.basePrice = parsedBasePrice;
       }
 
       if (Object.keys(updateData).length === 0) {
         return res
           .status(400)
-          .json({ message: "No data provided for update." });
+          .json({ message: "Не надано даних для оновлення." });
       }
 
       const existingService = await Service.findById(id);
       if (!existingService) {
-        return res.status(404).json({ message: "Service not found." });
+        return res
+          .status(404)
+          .json({ message: "Послугу для оновлення не знайдено." });
       }
 
       const result = await Service.update(id, updateData);
 
-      if (result.affectedRows === 0 && result.changedRows === 0) {
-        // changedRows може бути 0, якщо дані ті самі
-        // Можливо, послуги не існувало, або дані не змінилися.
-        // findById вже перевіряє існування, тому тут, ймовірно, дані не змінилися.
+      if (result.changedRows === 0 && result.affectedRows > 0) {
+        return res.status(200).json({
+          message: "Дані послуги не було змінено.",
+          service: await Service.findById(id),
+        });
+      }
+      if (result.affectedRows === 0) {
         return res
-          .status(200)
-          .json({
-            message: "Service data was not changed.",
-            service: await Service.findById(id),
-          });
+          .status(404)
+          .json({ message: "Послугу не знайдено або оновлення не вдалося." });
       }
 
       const updatedService = await Service.findById(id);
-      res
-        .status(200)
-        .json({
-          message: "Service updated successfully",
-          service: updatedService,
-        });
+      res.status(200).json({
+        message: "Дані послуги успішно оновлено",
+        service: updatedService,
+      });
     } catch (error) {
-      if (error.message.includes("already exists")) {
+      if (
+        error.message &&
+        typeof error.message === "string" &&
+        (error.message.toLowerCase().includes("already exists") ||
+          error.message.includes("вже існує"))
+      ) {
         return res.status(409).json({ message: error.message });
+      }
+      if (
+        error.message &&
+        (error.message.includes("Назва послуги не може бути порожньою") ||
+          error.message.includes("Базова ціна (BasePrice) має бути"))
+      ) {
+        return res.status(400).json({ message: error.message });
       }
       next(error);
     }
@@ -127,25 +195,56 @@ const serviceController = {
       const { id } = req.params;
       const existingService = await Service.findById(id);
       if (!existingService) {
-        return res.status(404).json({ message: "Service not found." });
-      }
-
-      const success = await Service.delete(id);
-      if (!success) {
-        // Це може статися, якщо сервіс був видалений іншим запитом між findById і delete,
-        // або якщо спрацювали якісь непередбачені обмеження БД.
         return res
           .status(404)
-          .json({
-            message: "Service could not be deleted or was already deleted.",
-          });
+          .json({ message: "Послугу для видалення не знайдено." });
       }
-      res.status(200).json({ message: "Service deleted successfully" });
+      await Service.delete(id); // Модель тепер кидає помилку, якщо не вдалося видалити через FK
+      res.status(200).json({ message: "Послугу успішно видалено" });
     } catch (error) {
-      // Помилки, пов'язані з обмеженнями зовнішнього ключа
-      if (error.message.includes("Cannot delete service")) {
-        return res.status(409).json({ message: error.message }); // 409 Conflict
+      // Обробка специфічної помилки від моделі про FK
+      if (
+        error.message &&
+        typeof error.message === "string" &&
+        error.message.toLowerCase().includes("неможливо видалити послугу")
+      ) {
+        return res.status(409).json({ message: error.message });
       }
+      next(error);
+    }
+  },
+
+  updatePricesBatch: async (req, res, next) => {
+    try {
+      const { percentageChange } = req.body;
+
+      if (
+        percentageChange === undefined ||
+        percentageChange === null ||
+        String(percentageChange).trim() === ""
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Необхідно вказати відсоток зміни ціни." });
+      }
+
+      const parsedPercentage = parseFloat(percentageChange);
+      if (isNaN(parsedPercentage)) {
+        return res
+          .status(400)
+          .json({ message: "Відсоток зміни має бути числом." });
+      }
+
+      const result = await Service.updateAllPricesByPercentage(
+        parsedPercentage
+      );
+
+      res.status(200).json({
+        message: `Ціни для ${result.changedRows} послуг (з ${result.affectedRows} оброблених) успішно оновлено на ${parsedPercentage}%.`,
+        updatedCount: result.changedRows,
+        affectedCount: result.affectedRows,
+      });
+    } catch (error) {
       next(error);
     }
   },

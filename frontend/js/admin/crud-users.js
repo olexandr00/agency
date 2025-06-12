@@ -13,13 +13,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModalButton = userModal.querySelector(".close-modal-button");
   const userForm = document.getElementById("userForm");
   const modalTitle = document.getElementById("modalTitle");
-  const userIdInput = document.getElementById("userId"); // Hidden input for user ID
+  const userIdInput = document.getElementById("userId");
   const userFormMessage = document.getElementById("user-form-message");
   const userSearchInput = document.getElementById("userSearchInput");
 
-  let currentUsers = []; // Для зберігання завантажених користувачів (для пошуку)
+  let currentUsers = [];
 
-  // --- Завантаження та відображення користувачів ---
+  // Завантаження та відображення користувачів
   async function fetchAndDisplayUsers(searchTerm = "") {
     showLoader();
     try {
@@ -63,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ).toLocaleDateString("uk-UA");
 
       const actionsCell = row.insertCell();
-      actionsCell.className = "actions-cell"; // Для можливої стилізації
+      actionsCell.className = "actions-cell";
 
       const editButton = document.createElement("button");
       editButton.className = "button button-small button-edit";
@@ -82,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Показ/приховування повідомлень ---
+  //  Показ/приховування повідомлень
   function showLoader() {
     usersLoader.style.display = "block";
     usersError.style.display = "none";
@@ -105,11 +105,11 @@ document.addEventListener("DOMContentLoaded", () => {
     usersNoResults.style.display = "none";
   }
 
-  // --- Модальне вікно та форма ---
+  // Модальне вікно та форма
   function openModal(title = "Додати Користувача", user = null) {
     modalTitle.textContent = title;
-    userForm.reset(); // Скинути форму
-    userIdInput.value = ""; // Очистити приховане поле ID
+    userForm.reset();
+    userIdInput.value = "";
     userFormMessage.textContent = "";
     userFormMessage.className = "form-message";
 
@@ -122,7 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Пароль залишаємо порожнім для редагування (щоб не змінювати, якщо не потрібно)
       userForm.password.placeholder = "Залиште порожнім, щоб не змінювати";
     } else {
-      userForm.password.placeholder = ""; // Звичайний плейсхолдер для нового пароля
+      userForm.password.placeholder = "";
     }
     userModal.classList.add("active");
   }
@@ -158,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
       email: userForm.email.value,
       role: userForm.role.value,
     };
-    // Додаємо пароль тільки якщо він введений (для створення або зміни)
+    // Додаємо пароль тільки якщо він введений
     if (userForm.password.value) {
       if (userForm.password.value.length < 6) {
         userFormMessage.textContent = "Пароль має бути не менше 6 символів.";
@@ -210,12 +210,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Видалення користувача ---
+  // Видалення користувача
   async function deleteUser(userId, username) {
     if (
-      !confirm(
-        `Ви впевнені, що хочете видалити користувача "${username}" (ID: ${userId})?`
-      )
+      !confirm(`Ви впевнені, що хочете видалити користувача "${username}"?`)
     ) {
       return;
     }
@@ -224,7 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      const result = await response.json(); // Бекенд має повертати JSON навіть при DELETE
+      const result = await response.json();
 
       if (response.ok) {
         alert(result.message || "Користувача успішно видалено!");
@@ -242,7 +240,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Пошук ---
+  // Пошук
   let searchTimeout;
   userSearchInput.addEventListener("input", () => {
     clearTimeout(searchTimeout);
@@ -257,6 +255,5 @@ document.addEventListener("DOMContentLoaded", () => {
     fetchAndDisplayUsers();
   } else {
     showError("Необхідна авторизація для перегляду користувачів.");
-    // Auth.protectAdminRoutes() вже мав би перенаправити, але це додаткова перевірка
   }
 });

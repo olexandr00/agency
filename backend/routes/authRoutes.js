@@ -6,6 +6,6 @@ const { isAuthenticated } = require("../middleware/authMiddleware"); // Для g
 
 router.post("/register", authController.register);
 router.post("/login", authController.login);
-router.get("/me", isAuthenticated, authController.getMe); // Приклад захищеного роуту
+router.get("/me", isAuthenticated, authController.getMe);
 
 module.exports = router;

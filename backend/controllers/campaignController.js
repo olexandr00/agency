@@ -1,8 +1,8 @@
 // backend/controllers/campaignController.js
 const Campaign = require("../models/Campaign");
-const Client = require("../models/Client"); // Для перевірки існування клієнта
-const Employee = require("../models/Employee"); // Для перевірки існування працівника
-const Service = require("../models/Service"); // Для перевірки існування послуги
+const Client = require("../models/Client");
+const Employee = require("../models/Employee");
+const Service = require("../models/Service");
 
 const campaignController = {
   createCampaign: async (req, res, next) => {
@@ -21,14 +21,14 @@ const campaignController = {
       if (!campaignName || !clientId) {
         return res
           .status(400)
-          .json({ message: "CampaignName and ClientID are required." });
+          .json({ message: "Назва кампанії та ID клієнта є обов'язковими." });
       }
       // Валідація ClientID
       const client = await Client.findById(clientId);
       if (!client) {
         return res
           .status(400)
-          .json({ message: `Client with ID ${clientId} not found.` });
+          .json({ message: `Клієнта з ID ${clientId} не знайдено.` });
       }
       // Валідація ResponsibleEmployeeID (якщо вказано)
       if (responsibleEmployeeId) {
@@ -36,7 +36,7 @@ const campaignController = {
         if (!employee || employee.DismissalDate) {
           // Перевіряємо чи не звільнений
           return res.status(400).json({
-            message: `Active employee with ID ${responsibleEmployeeId} not found or is dismissed.`,
+            message: `Активного працівника з ID ${responsibleEmployeeId} не знайдено або він звільнений.`,
           });
         }
       }
@@ -44,7 +44,7 @@ const campaignController = {
       const validStatuses = ["Planned", "Active", "Completed", "Cancelled"];
       if (campaignStatus && !validStatuses.includes(campaignStatus)) {
         return res.status(400).json({
-          message: `Invalid campaign status. Must be one of: ${validStatuses.join(
+          message: `Недійсний статус кампанії. Статус має бути одним із: ${validStatuses.join(
             ", "
           )}`,
         });
@@ -55,7 +55,7 @@ const campaignController = {
         (isNaN(parseFloat(campaignBudget)) || parseFloat(campaignBudget) < 0)
       ) {
         return res.status(400).json({
-          message: "Campaign budget must be a non-negative number or null.",
+          message: "Бюджет кампанії має бути невід'ємним числом або null.",
         });
       }
       // ... інші валідації ...
@@ -73,15 +73,30 @@ const campaignController = {
         campaignDescription,
       });
       res.status(201).json({
-        message: "Campaign created successfully",
+        message: "Кампанію успішно створено",
         campaign: newCampaign,
       });
     } catch (error) {
-      if (
-        error.message.includes("not found") ||
-        error.message.includes("Invalid")
-      ) {
-        return res.status(400).json({ message: error.message });
+      // Спроба перекласти загальні помилки від моделі/БД, якщо вони не були перехоплені раніше
+      if (error.message && typeof error.message === "string") {
+        if (
+          error.message.toLowerCase().includes("not found") ||
+          error.message.toLowerCase().includes("foreign key constraint failed")
+        ) {
+          return res.status(400).json({
+            message:
+              "Помилка: один із зазначених ID (клієнта, працівника) не знайдено або недійсний.",
+          });
+        }
+        if (
+          error.message.toLowerCase().includes("invalid") ||
+          error.message.toLowerCase().includes("validation failed")
+        ) {
+          return res.status(400).json({
+            message:
+              "Помилка: надані дані не пройшли валідацію або мають невірний формат.",
+          });
+        }
       }
       next(error);
     }
@@ -103,7 +118,7 @@ const campaignController = {
       const { id } = req.params;
       const campaign = await Campaign.findById(id);
       if (!campaign) {
-        return res.status(404).json({ message: "Campaign not found." });
+        return res.status(404).json({ message: "Кампанію не знайдено." });
       }
       res.status(200).json(campaign);
     } catch (error) {
@@ -132,16 +147,15 @@ const campaignController = {
         if (!client)
           return res
             .status(400)
-            .json({ message: `Client with ID ${clientId} not found.` });
+            .json({ message: `Клієнта з ID ${clientId} не знайдено.` });
         updateData.clientId = parseInt(clientId);
       }
       if (responsibleEmployeeId !== undefined) {
-        // Дозволяємо null
         if (responsibleEmployeeId !== null) {
           const employee = await Employee.findById(responsibleEmployeeId);
           if (!employee || employee.DismissalDate)
             return res.status(400).json({
-              message: `Active employee with ID ${responsibleEmployeeId} not found or is dismissed.`,
+              message: `Активного працівника з ID ${responsibleEmployeeId} не знайдено або він звільнений.`,
             });
         }
         updateData.responsibleEmployeeId = responsibleEmployeeId
@@ -156,7 +170,7 @@ const campaignController = {
           (isNaN(parseFloat(campaignBudget)) || parseFloat(campaignBudget) < 0)
         ) {
           return res.status(400).json({
-            message: "Campaign budget must be a non-negative number or null.",
+            message: "Бюджет кампанії має бути невід'ємним числом або null.",
           });
         }
         updateData.campaignBudget = campaignBudget;
@@ -165,7 +179,7 @@ const campaignController = {
         const validStatuses = ["Planned", "Active", "Completed", "Cancelled"];
         if (!validStatuses.includes(campaignStatus))
           return res.status(400).json({
-            message: `Invalid campaign status. Must be one of: ${validStatuses.join(
+            message: `Недійсний статус кампанії. Статус має бути одним із: ${validStatuses.join(
               ", "
             )}`,
           });
@@ -177,39 +191,53 @@ const campaignController = {
       if (Object.keys(updateData).length === 0) {
         return res
           .status(400)
-          .json({ message: "No data provided for update." });
+          .json({ message: "Не надано даних для оновлення." });
       }
 
       const existingCampaign = await Campaign.findById(id);
       if (!existingCampaign) {
-        return res.status(404).json({ message: "Campaign not found." });
+        return res.status(404).json({ message: "Кампанію не знайдено." });
       }
 
       const result = await Campaign.update(id, updateData);
 
       if (result.changedRows === 0 && result.affectedRows > 0) {
         return res.status(200).json({
-          message: "Campaign data was not changed.",
+          message: "Дані кампанії не було змінено.",
           campaign: await Campaign.findById(id),
         });
       }
       if (result.affectedRows === 0) {
         return res
           .status(404)
-          .json({ message: "Campaign not found or update failed." });
+          .json({ message: "Кампанію не знайдено або оновлення не вдалося." });
       }
 
       const updatedCampaign = await Campaign.findById(id);
       res.status(200).json({
-        message: "Campaign updated successfully",
+        message: "Кампанію успішно оновлено",
         campaign: updatedCampaign,
       });
     } catch (error) {
-      if (
-        error.message.includes("not found") ||
-        error.message.includes("Invalid")
-      ) {
-        return res.status(400).json({ message: error.message });
+      if (error.message && typeof error.message === "string") {
+        if (
+          error.message.toLowerCase().includes("not found") ||
+          error.message.toLowerCase().includes("foreign key constraint failed")
+        ) {
+          return res.status(400).json({
+            message:
+              "Помилка: один із зазначених ID (клієнта, працівника) не знайдено або недійсний.",
+          });
+        }
+        if (
+          error.message.toLowerCase().includes("invalid") ||
+          error.message.toLowerCase().includes("validation failed")
+        ) {
+          return res.status(400).json({
+            message:
+              "Помилка: надані дані не пройшли валідацію або мають невірний формат.",
+          });
+        }
       }
       next(error);
     }
@@ -218,27 +246,26 @@ const campaignController = {
   deleteCampaign: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const existingCampaign = await Campaign.findById(id); // findById з моделі Campaign
+      const existingCampaign = await Campaign.findById(id);
       if (!existingCampaign) {
-        return res.status(404).json({ message: "Campaign not found." });
+        return res.status(404).json({ message: "Кампанію не знайдено." });
       }
 
       const success = await Campaign.delete(id);
       if (!success) {
         return res.status(404).json({
-          message: "Campaign could not be deleted or was already deleted.",
+          message: "Кампанію не вдалося видалити або її вже було видалено.",
         });
       }
       res.status(200).json({
         message:
-          "Campaign and its associated services/assignments deleted successfully",
+          "Кампанію та пов'язані з нею послуги/призначення успішно видалено",
       });
     } catch (error) {
       next(error);
     }
   },
 
-  // --- Контролери для Campaign_Services ---
   addServiceToCampaign: async (req, res, next) => {
     try {
       const { campaignId } = req.params;
@@ -247,19 +274,19 @@ const campaignController = {
       if (!serviceId || quantity === undefined) {
         return res
           .status(400)
-          .json({ message: "ServiceID and ServiceQuantity are required." });
+          .json({ message: "ID послуги та кількість є обов'язковими." });
       }
       if (isNaN(parseInt(quantity)) || parseInt(quantity) <= 0) {
-        return res
-          .status(400)
-          .json({ message: "ServiceQuantity must be a positive integer." });
+        return res.status(400).json({
+          message: "Кількість послуги має бути додатнім цілим числом.",
+        });
       }
-      // Додаткова перевірка існування serviceId, хоча модель це робить
+
       const service = await Service.findById(serviceId);
       if (!service) {
         return res
           .status(400)
-          .json({ message: `Service with ID ${serviceId} not found.` });
+          .json({ message: `Послугу з ID ${serviceId} не знайдено.` });
       }
 
       const result = await Campaign.addServiceToCampaign(
@@ -268,17 +295,32 @@ const campaignController = {
         parseInt(quantity)
       );
       res.status(201).json({
-        message: "Service added to campaign successfully",
+        message: "Послугу успішно додано до кампанії",
         data: result,
       });
     } catch (error) {
-      if (
-        error.message.includes("not found") ||
-        error.message.includes("already added")
-      ) {
-        return res
-          .status(error.message.includes("not found") ? 404 : 409)
-          .json({ message: error.message });
+      let userMessage = "";
+      let statusCode = 500;
+
+      if (error.message && typeof error.message === "string") {
+        if (error.message.toLowerCase().includes("already added")) {
+          statusCode = 409;
+          userMessage = `Послуга з ID ${serviceId} вже додана до кампанії ${campaignId}.`;
+        } else if (error.message.toLowerCase().includes("not found")) {
+          statusCode = 404;
+          if (error.message.toLowerCase().includes("campaign")) {
+            userMessage = `Кампанію з ID ${campaignId} не знайдено.`;
+          } else if (error.message.toLowerCase().includes("service")) {
+            userMessage = `Послугу з ID ${serviceId} не знайдено (можливо, помилка на рівні моделі кампанії).`;
+          } else {
+            userMessage =
+              "Запитаний ресурс не знайдено під час додавання послуги до кампанії.";
+          }
+        }
+      }
+
+      if (userMessage) {
+        return res.status(statusCode).json({ message: userMessage });
       }
       next(error);
     }
@@ -292,12 +334,12 @@ const campaignController = {
       if (quantity === undefined) {
         return res
           .status(400)
-          .json({ message: "ServiceQuantity is required." });
+          .json({ message: "Кількість послуги є обов'язковою." });
       }
       if (isNaN(parseInt(quantity)) || parseInt(quantity) <= 0) {
-        return res
-          .status(400)
-          .json({ message: "ServiceQuantity must be a positive integer." });
+        return res.status(400).json({
+          message: "Кількість послуги має бути додатнім цілим числом.",
+        });
       }
 
       const result = await Campaign.updateServiceInCampaign(
@@ -306,12 +348,34 @@ const campaignController = {
         parseInt(quantity)
       );
       res.status(200).json({
-        message: "Service quantity in campaign updated successfully",
+        message: "Кількість послуги в кампанії успішно оновлено",
         data: result,
       });
     } catch (error) {
-      if (error.message.includes("not found")) {
-        return res.status(404).json({ message: error.message });
+      if (
+        error.message &&
+        typeof error.message === "string" &&
+        error.message.toLowerCase().includes("not found")
+      ) {
+        let userMessage = "";
+        if (
+          error.message
+            .toLowerCase()
+            .includes(`campaign with id ${campaignid} not found`)
+        ) {
+          // Приклад більш точної перевірки
+          userMessage = `Кампанію з ID ${campaignId} не знайдено.`;
+        } else if (
+          error.message
+            .toLowerCase()
+            .includes(`service with id ${serviceid} not found in campaign`)
+        ) {
+          // Приклад
+          userMessage = `Послугу з ID ${serviceId} не знайдено в кампанії ${campaignId}.`;
+        } else {
+          userMessage = `Послугу або кампанію не знайдено, або послуга не належить цій кампанії. ID кампанії: ${campaignId}, ID послуги: ${serviceId}.`;
+        }
+        return res.status(404).json({ message: userMessage });
       }
       next(error);
     }
@@ -325,13 +389,12 @@ const campaignController = {
         serviceId
       );
       if (!success) {
+        // Модель повернула false, означає, що запис не знайдено для видалення
         return res.status(404).json({
-          message: `Service ID ${serviceId} not found in campaign ID ${campaignId} or already removed.`,
+          message: `Послугу з ID ${serviceId} не знайдено в кампанії ID ${campaignId} або її вже було видалено.`,
         });
       }
-      res
-        .status(200)
-        .json({ message: "Service removed from campaign successfully." });
+      res.status(200).json({ message: "Послугу успішно видалено з кампанії." });
     } catch (error) {
       next(error);
     }

@@ -9,7 +9,6 @@ function validatePasswordServer(password) {
   const MIN_LENGTH = 8;
 
   if (!password || password.length < MIN_LENGTH) {
-    // Додано перевірку на існування пароля
     errors.push(`Пароль має містити щонайменше ${MIN_LENGTH} символів.`);
   }
   if (!/[a-z]/.test(password)) {
@@ -21,9 +20,6 @@ function validatePasswordServer(password) {
   if (!/[0-9]/.test(password)) {
     errors.push("Пароль має містити щонайменше одну цифру.");
   }
-  // if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password)) {
-  //     errors.push("Пароль має містити щонайменше один спеціальний символ.");
-  // }
   return errors;
 }
 
@@ -33,11 +29,9 @@ const authController = {
       const { username, email, password, role } = req.body;
 
       if (!username || !email || !password) {
-        return res
-          .status(400)
-          .json({
-            message: "Ім'я користувача, email та пароль є обов'язковими.",
-          });
+        return res.status(400).json({
+          message: "Ім'я користувача, email та пароль є обов'язковими.",
+        });
       }
 
       // Серверна валідація складності пароля
@@ -63,9 +57,8 @@ const authController = {
       }
 
       const hashedPassword = await hashPassword(password);
-      // При публічній реєстрації роль завжди 'user', якщо тільки не спеціальна логіка (якої тут немає)
+      // При публічній реєстрації роль завжди 'user'
       const userRole = "user";
-      // const userRole = (role && req.user?.role === 'admin' && ['user', 'admin'].includes(role)) ? role : 'user'; // Для створення адміном
 
       const newUser = await User.create(
         username,
@@ -86,7 +79,6 @@ const authController = {
         },
       });
     } catch (error) {
-      // Модель User.create вже обробляє ER_DUP_ENTRY, але можна залишити для інших помилок
       if (
         error.message &&
         error.message.toLowerCase().includes("already exists")
@@ -142,14 +134,12 @@ const authController = {
       if (!user) {
         return res.status(404).json({ message: "Користувача не знайдено" });
       }
-      res
-        .status(200)
-        .json({
-          id: user.UserID,
-          username: user.Username,
-          email: user.Email,
-          role: user.Role,
-        });
+      res.status(200).json({
+        id: user.UserID,
+        username: user.Username,
+        email: user.Email,
+        role: user.Role,
+      });
     } catch (error) {
       next(error);
     }

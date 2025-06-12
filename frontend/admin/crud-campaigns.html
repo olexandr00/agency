@@ -44,6 +44,36 @@
         border-bottom: 1px solid var(--border-color);
       }
     </style>
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
@@ -277,8 +307,6 @@
               <!-- Список послуг кампанії -->
             </ul>
           </div>
-
-          <!-- Секція Призначені працівники ВИДАЛЕНА -->
 
           <button
             type="submit"

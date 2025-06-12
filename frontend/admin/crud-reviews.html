@@ -27,10 +27,39 @@
         font-weight: bold;
       }
     </style>
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
-      <!-- ... (код сайдбару, з активним посиланням на "Відгуки") ... -->
       <div class="admin-logo">
         <a href="../index.html">На сайт</a>
       </div>
@@ -65,7 +94,6 @@
       <section class="content-area">
         <div class="content-header">
           <h1>Список Відгуків</h1>
-          <!-- Кнопка "Додати відгук" тут не потрібна, адміни можуть додавати через основний сайт, якщо треба -->
         </div>
 
         <div class="search-filter-bar">
@@ -157,7 +185,6 @@
               rows="6"
               readonly
             ></textarea>
-            <!-- readonly, якщо не редагуємо, або зняти для редагування -->
           </div>
           <div class="form-group">
             <label for="modalReviewStatus">Статус:</label>

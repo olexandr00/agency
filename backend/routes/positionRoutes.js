@@ -4,8 +4,7 @@ const router = express.Router();
 const positionController = require("../controllers/positionController");
 const { isAuthenticated, isAdmin } = require("../middleware/authMiddleware");
 
-// Перегляд посад може бути доступний і для не адмінів (наприклад, для випадаючих списків при створенні працівника)
-// Але для простоти зараз зробимо все для адмінів
+// Для не адмінів
 router.get("/", isAuthenticated, isAdmin, positionController.getAllPositions);
 router.get(
   "/:id",

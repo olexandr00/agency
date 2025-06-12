@@ -6,13 +6,40 @@
     <title>Адмін-панель - Користувачі</title>
     <link href="../css/custom.css" rel="stylesheet" />
     <link href="../css/admin-common.css" rel="stylesheet" />
-    <!-- Спільні стилі для адмінки -->
     <link href="../css/admin-crud.css" rel="stylesheet" />
-    <!-- Стилі для CRUD сторінок -->
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
-      <!-- ... (код сайдбару, як у dashboard.html, з активним посиланням на "Користувачі") ... -->
       <div class="admin-logo">
         <a href="../index.html">На сайт</a>
       </div>
@@ -59,7 +86,6 @@
             class="form-input"
             placeholder="Пошук за іменем або email..."
           />
-          <!-- Можна додати фільтр за роллю -->
         </div>
 
         <div class="table-responsive">
@@ -73,22 +99,7 @@
                 <th>Дії</th>
               </tr>
             </thead>
-            <tbody id="usersTableBody">
-              <!-- Рядки будуть додані JS -->
-              <!-- Приклад рядка:
-                        <tr>
-                            <td>1</td>
-                            <td>admin</td>
-                            <td>admin@example.com</td>
-                            <td>admin</td>
-                            <td>2024-01-01</td>
-                            <td>
-                                <button class="button button-small button-edit">Редагувати</button>
-                                <button class="button button-small button-danger button-delete">Видалити</button>
-                            </td>
-                        </tr>
-                        -->
-            </tbody>
+            <tbody id="usersTableBody"></tbody>
           </table>
         </div>
         <p id="users-loader" class="loader-text">
@@ -130,9 +141,7 @@
             />
           </div>
           <div class="form-group">
-            <label for="password"
-              >Пароль (залиште порожнім, щоб не змінювати):</label
-            >
+            <label for="password">Пароль:</label>
             <input
               type="password"
               id="password"

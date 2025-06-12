@@ -14,13 +14,9 @@ const Cart = {
 
   init: function () {
     if (this.hasInitialized) {
-      console.log(
-        "[Cart.js] init: Already initialized. Skipping subsequent calls but updating count."
-      );
       this.updateCartCount();
       return;
     }
-    console.log("[Cart.js] init: Initializing for the first time.");
     this.updateCartCount();
 
     this.addToCartModalEl = document.getElementById("addToCartModal");
@@ -52,22 +48,17 @@ const Cart = {
         }
       });
     } else {
-      console.warn("[Cart.js] addToCartModal element not found on this page.");
+      console.warn(
+        "[Cart.js] Елемент addToCartModal не знайдено на цій сторінці."
+      );
     }
 
     const cartItemsContainer = document.getElementById("cart-items-container");
     if (cartItemsContainer) {
-      console.log(
-        "[Cart.js] Cart page detected. Initializing display, checkout, and history."
-      );
       this.displayCartItems();
       this.initCheckoutForm();
       this.loadOrderHistory(); // Завантажуємо історію (перевірка авторизації всередині)
     } else {
-      console.log("[Cart.js] Not on cart page (no #cart-items-container).");
-      // Якщо ми не на сторінці кошика, але є секція історії (наприклад, в профілі користувача),
-      // і користувач авторизований, ми все одно можемо спробувати її завантажити.
-      // Це потребує, щоб Cart.init() викликався на тій сторінці.
       const historySectionOnly = document.getElementById(
         "order-history-section"
       );
@@ -75,10 +66,6 @@ const Cart = {
         historySectionOnly &&
         !document.getElementById("cart-items-container")
       ) {
-        // Тільки якщо немає контейнера кошика
-        console.log(
-          "[Cart.js] Order history section found on non-cart page. Attempting to load history."
-        );
         this.loadOrderHistory();
       }
     }
@@ -92,7 +79,7 @@ const Cart = {
       if (this.continueShoppingBtnEl) this.continueShoppingBtnEl.focus();
     } else {
       console.warn(
-        "[Cart.js showAddToCartModal] Modal elements not initialized or found. Using alert fallback."
+        "[Cart.js showAddToCartModal] Елементи модального вікна не ініціалізовані або не знайдені. Використовується резервний alert."
       );
       alert(`"${itemName || "Послугу"}" додано до кошика!`);
     }
@@ -108,13 +95,13 @@ const Cart = {
       typeof service.name === "undefined" ||
       typeof service.price === "undefined"
     ) {
-      console.error("[Cart.js] addItem: Invalid service object", service);
+      console.error("[Cart.js] addItem: Некоректний об'єкт послуги", service);
       if (typeof Main !== "undefined" && typeof Main.showToast === "function")
         Main.showToast("Помилка: Некоректні дані послуги.", "error");
       else alert("Помилка: Некоректні дані послуги.");
       return;
     }
-    console.log("[Cart.js] addItem for:", service.name);
+    console.log("[Cart.js] addItem для:", service.name);
     const cart = this.getCart();
     const existingItem = cart.find((item) => item.serviceId === service.id);
     if (existingItem) existingItem.quantity += 1;
@@ -134,18 +121,18 @@ const Cart = {
     try {
       return cartData ? JSON.parse(cartData) : [];
     } catch (e) {
-      console.error("Error parsing cart from localStorage:", e);
+      console.error("Помилка розбору кошика з localStorage:", e);
       localStorage.removeItem(this.cartKey);
       return [];
     }
   },
 
   saveCart: function (cart) {
-    console.log("[Cart.js] saveCart. Cart items now:", cart.length);
+    console.log("[Cart.js] saveCart. Елементів у кошику зараз:", cart.length);
     try {
       localStorage.setItem(this.cartKey, JSON.stringify(cart));
     } catch (e) {
-      console.error("Error saving cart to localStorage:", e);
+      console.error("Помилка збереження кошика в localStorage:", e);
       alert("Помилка збереження кошика.");
     }
     this.updateCartCount();
@@ -154,7 +141,7 @@ const Cart = {
   },
 
   removeItem: function (serviceId) {
-    console.log(`[Cart.js] removeItem called for serviceId: ${serviceId}`);
+    console.log(`[Cart.js] removeItem викликано для serviceId: ${serviceId}`);
     let cart = this.getCart();
     cart = cart.filter((item) => String(item.serviceId) !== String(serviceId));
     this.saveCart(cart);
@@ -162,7 +149,7 @@ const Cart = {
 
   updateItemQuantity: function (serviceId, quantity) {
     console.log(
-      `[Cart.js] updateItemQuantity called for serviceId: ${serviceId}, new quantity: ${quantity}`
+      `[Cart.js] updateItemQuantity викликано для serviceId: ${serviceId}, нова кількість: ${quantity}`
     );
     const cart = this.getCart();
     const itemToUpdate = cart.find(
@@ -172,7 +159,7 @@ const Cart = {
       const newQuantity = parseInt(quantity);
       if (isNaN(newQuantity) || newQuantity <= 0) {
         console.log(
-          `[Cart.js] Quantity for serviceId ${serviceId} is invalid or zero, removing item.`
+          `[Cart.js] Кількість для serviceId ${serviceId} некоректна або нульова, видалення елемента.`
         );
         this.removeItem(serviceId);
       } else {
@@ -181,13 +168,13 @@ const Cart = {
       }
     } else {
       console.warn(
-        `[Cart.js] Item with serviceId ${serviceId} not found in cart for quantity update.`
+        `[Cart.js] Елемент з serviceId ${serviceId} не знайдено в кошику для оновлення кількості.`
       );
     }
   },
 
   clearCart: function () {
-    console.log("[Cart.js] clearCart called");
+    console.log("[Cart.js] clearCart викликано");
     localStorage.removeItem(this.cartKey);
     this.updateCartCount();
     if (document.getElementById("cart-items-container"))
@@ -202,7 +189,7 @@ const Cart = {
       (total, item) => total + (item.price || 0) * (item.quantity || 0),
       0
     );
-  }, // Додав || 0 для ціни та кількості
+  },
 
   updateCartCount: function () {
     const cartCountElement = document.getElementById("cart-count");
@@ -219,14 +206,14 @@ const Cart = {
 
     if (!container || !summaryEl || !totalPriceEl || !checkoutFormContainer) {
       console.warn(
-        "[Cart.js displayCartItems] One or more core cart page elements missing."
+        "[Cart.js displayCartItems] Відсутні один або декілька ключових елементів сторінки кошика."
       );
       return;
     }
     container.innerHTML = ""; // Очищаємо контейнер
     const cart = this.getCart();
     console.log(
-      "[Cart.js displayCartItems] Rendering cart items, count:",
+      "[Cart.js displayCartItems] Відображення елементів кошика, кількість:",
       cart.length
     );
 
@@ -330,11 +317,13 @@ const Cart = {
   initCheckoutForm: function () {
     if (this.checkoutFormInitialized) {
       console.log(
-        "[Cart.js initCheckoutForm] Form already initialized. Skipping."
+        "[Cart.js initCheckoutForm] Форма вже ініціалізована. Пропускаємо."
       );
       return;
     }
-    console.log("[Cart.js initCheckoutForm] Initializing checkout form...");
+    console.log(
+      "[Cart.js initCheckoutForm] Ініціалізація форми оформлення замовлення..."
+    );
 
     const form = document.getElementById("checkout-form");
     const messageEl = document.getElementById("checkout-message");
@@ -351,7 +340,7 @@ const Cart = {
 
     if (!form || !submitButton || !messageEl) {
       console.warn(
-        "[Cart.js initCheckoutForm] Core elements for checkout form (form, submitButton, messageEl) are missing."
+        "[Cart.js initCheckoutForm] Відсутні ключові елементи для форми оформлення (form, submitButton, messageEl)."
       );
       return; // Не продовжуємо, якщо основних елементів немає
     }
@@ -368,9 +357,13 @@ const Cart = {
         sanitizedValue += currentValue.replace(/[^0-9]/g, "");
         e.target.value = sanitizedValue;
       });
-      console.log("[Cart.js initCheckoutForm] Phone input sanitizer attached.");
+      console.log(
+        "[Cart.js initCheckoutForm] Обробник для поля телефону додано."
+      );
     } else {
-      console.warn("[Cart.js initCheckoutForm] customerPhoneInput not found.");
+      console.warn(
+        "[Cart.js initCheckoutForm] customerPhoneInput не знайдено."
+      );
     }
 
     const isLoggedIn =
@@ -400,14 +393,16 @@ const Cart = {
       messageEl.className = "form-message";
       // Не встановлюємо checkoutFormInitialized = true, бо форма неактивна
       console.log(
-        "[Cart.js initCheckoutForm] User not logged in. Checkout disabled."
+        "[Cart.js initCheckoutForm] Користувач не авторизований. Оформлення замовлення вимкнено."
       );
       return;
     }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      console.log("[Cart.js initCheckoutForm] Checkout form submitted.");
+      console.log(
+        "[Cart.js initCheckoutForm] Форму оформлення замовлення відправлено."
+      );
       if (messageEl) {
         messageEl.textContent = "";
         messageEl.className = "form-message";
@@ -444,13 +439,6 @@ const Cart = {
           }
           return;
         }
-      } else {
-        // Якщо телефон обов'язковий
-        // if (messageEl) {
-        //     messageEl.textContent = 'Будь ласка, введіть ваш номер телефону.';
-        //     messageEl.classList.add('error');
-        // }
-        // return;
       }
 
       const orderPayload = {
@@ -465,7 +453,7 @@ const Cart = {
       };
 
       console.log(
-        "[Cart.js initCheckoutForm] Order Payload to be sent:",
+        "[Cart.js initCheckoutForm] Дані замовлення для відправки:",
         JSON.stringify(orderPayload, null, 2)
       );
 
@@ -491,12 +479,12 @@ const Cart = {
           body: JSON.stringify(orderPayload),
         });
         console.log(
-          "[Cart.js initCheckoutForm] Server response status:",
+          "[Cart.js initCheckoutForm] Статус відповіді сервера:",
           response.status
         );
         const result = await response.json();
         console.log(
-          "[Cart.js initCheckoutForm] Server response data:",
+          "[Cart.js initCheckoutForm] Дані відповіді сервера:",
           JSON.stringify(result, null, 2)
         );
 
@@ -510,7 +498,7 @@ const Cart = {
             } успішно оформлено! ${result.message || ""}`;
           } else {
             console.warn(
-              "[Cart.js initCheckoutForm] publicOrderId missing in successful response:",
+              "[Cart.js initCheckoutForm] publicOrderId відсутній в успішній відповіді:",
               result.order
             );
           }
@@ -542,7 +530,7 @@ const Cart = {
           }
         }
       } catch (err) {
-        console.error("Error submitting order:", err);
+        console.error("Помилка відправки замовлення:", err);
         if (messageEl) {
           messageEl.textContent =
             "Помилка відправки замовлення. Перевірте з'єднання та спробуйте пізніше.";
@@ -557,19 +545,19 @@ const Cart = {
     });
     this.checkoutFormInitialized = true;
     console.log(
-      "[Cart.js initCheckoutForm] Checkout form event listener and phone input handler attached."
+      "[Cart.js initCheckoutForm] Обробник подій форми оформлення та обробник поля телефону додано."
     );
   },
 
   loadOrderHistory: async function () {
     if (this.isOrderHistoryLoading) {
       console.warn(
-        "[Cart.js loadOrderHistory] Already loading history. Skipping."
+        "[Cart.js loadOrderHistory] Історія вже завантажується. Пропускаємо."
       );
       return;
     }
     console.log(
-      "[Cart.js loadOrderHistory] Attempting to load order history..."
+      "[Cart.js loadOrderHistory] Спроба завантаження історії замовлень..."
     );
     this.isOrderHistoryLoading = true;
 
@@ -584,7 +572,7 @@ const Cart = {
 
     if (!historySection || !historyListEl) {
       console.warn(
-        "[Cart.js loadOrderHistory] Order history display elements (#order-history-section or #order-history-list) not found. History will not be loaded."
+        "[Cart.js loadOrderHistory] Елементи для відображення історії замовлень (#order-history-section або #order-history-list) не знайдені. Історія не буде завантажена."
       );
       this.isOrderHistoryLoading = false;
       return;
@@ -604,7 +592,7 @@ const Cart = {
       Auth.isLoggedIn();
     if (!isLoggedIn) {
       console.log(
-        "[Cart.js loadOrderHistory] User not logged in. Displaying auth required message."
+        "[Cart.js loadOrderHistory] Користувач не авторизований. Відображення повідомлення про необхідність авторизації."
       );
       if (authRequiredHistoryMsg)
         authRequiredHistoryMsg.style.display = "block";
@@ -621,13 +609,13 @@ const Cart = {
 
       if (!responseList.ok) {
         const errorData = await responseList.json().catch(() => ({
-          message: `HTTP error! status: ${responseList.status}`,
+          message: `HTTP помилка! Статус: ${responseList.status}`,
         }));
         throw new Error(errorData.message);
       }
       const ordersSummary = await responseList.json();
       console.log(
-        "[Cart.js loadOrderHistory] Orders summary received, count:",
+        "[Cart.js loadOrderHistory] Отримано зведення замовлень, кількість:",
         ordersSummary.length
       );
 
@@ -648,7 +636,7 @@ const Cart = {
             .then((res) => {
               if (!res.ok) {
                 console.error(
-                  `[Cart.js loadOrderHistory] Details fetch FAIL for ${orderIdentifier}, status: ${res.status}`
+                  `[Cart.js loadOrderHistory] НЕ вдалося завантажити деталі для ${orderIdentifier}, статус: ${res.status}`
                 );
                 return {
                   ...orderSum,
@@ -660,7 +648,7 @@ const Cart = {
             })
             .catch((err) => {
               console.error(
-                `[Cart.js loadOrderHistory] Network ERROR fetching details for ${orderIdentifier}:`,
+                `[Cart.js loadOrderHistory] Мережева ПОМИЛКА при завантаженні деталей для ${orderIdentifier}:`,
                 err
               );
               return {
@@ -673,7 +661,7 @@ const Cart = {
 
         const ordersWithDetails = await Promise.all(orderDetailPromises);
         console.log(
-          "[Cart.js loadOrderHistory] All details fetched/failed. Count:",
+          "[Cart.js loadOrderHistory] Всі деталі завантажено/не завантажено. Кількість:",
           ordersWithDetails.length
         );
 
@@ -757,7 +745,10 @@ const Cart = {
         });
       }
     } catch (e) {
-      console.error("Error in loadOrderHistory main try block:", e);
+      console.error(
+        "Помилка в основному блоці try функції loadOrderHistory:",
+        e
+      );
       if (errorEl) {
         errorEl.textContent = `Помилка завантаження історії: ${e.message}`;
         errorEl.style.display = "block";
@@ -765,7 +756,7 @@ const Cart = {
     } finally {
       this.isOrderHistoryLoading = false;
       if (loaderEl) loaderEl.style.display = "none";
-      console.log("[Cart.js loadOrderHistory] Finished.");
+      console.log("[Cart.js loadOrderHistory] Завершено.");
     }
   },
 
@@ -796,23 +787,22 @@ const Cart = {
 
 if (typeof Cart !== "undefined" && typeof Cart.init === "function") {
   document.addEventListener("DOMContentLoaded", () => {
-    console.log("[Cart.js] DOMContentLoaded, initializing Cart object.");
+    console.log("[Cart.js] DOMContentLoaded, ініціалізація об'єкта Cart.");
     // Перевіряємо, чи ми на сторінці, де потрібна повна ініціалізація кошика
     if (
-      document.body.id === "cart-page-body" || // Якщо у <body id="cart-page-body"> на сторінці кошика
-      document.getElementById("cart-items-container") || // Або є контейнер товарів кошика
-      document.querySelector(".add-to-cart-button")
+      document.body.id === "cart-page-body" ||
+      document.getElementById("cart-items-container") ||
+      document.querySelector(".add-to-cart-button") // Якщо є кнопка "В кошик", ініціалізуємо модальне вікно
     ) {
-      // Або є кнопки додавання в кошик
       Cart.init();
     } else {
       // Для інших сторінок, де потрібен тільки лічильник
       Cart.updateCartCount(); // Просто оновлюємо лічильник
       console.log(
-        "[Cart.js] Not a primary cart interaction page. Only updated cart count."
+        "[Cart.js] Це не основна сторінка взаємодії з кошиком. Оновлено лише лічильник кошика."
       );
     }
   });
 } else {
-  console.error("[Cart.js] Cart object or Cart.init method is not defined.");
+  console.error("[Cart.js] Об'єкт Cart або метод Cart.init не визначено.");
 }

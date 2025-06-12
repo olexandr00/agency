@@ -14,7 +14,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // Елементи модального вікна
   const messageModal = document.getElementById("messageModal");
   const closeModalButton = messageModal.querySelector(".close-modal-button");
-  // const modalTitle = messageModal.querySelector('#modalTitle'); // Заголовок статичний
   const messageIdHiddenInput = document.getElementById("messageIdHidden");
   const modalMessageSenderName = document.getElementById(
     "modalMessageSenderName"
@@ -138,7 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Показ/приховування повідомлень (ідентичні) ---
+  // Показ/приховування повідомлень
   function showLoader() {
     /* ... */ messagesLoader.style.display = "block";
     messagesError.style.display = "none";
@@ -161,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     messagesNoResults.style.display = "none";
   }
 
-  // --- Модальне вікно для деталей та зміни статусу ---
+  // Модальне вікно для деталей та зміни статусу
   let currentViewingMessageId = null;
   async function openMessageModal(message) {
     currentViewingMessageId = message.MessageID;
@@ -221,7 +220,7 @@ document.addEventListener("DOMContentLoaded", () => {
     await updateReadStatus(currentViewingMessageId, newReadStatus, true); // true - для закриття модалки
   });
 
-  // --- Зміна статусу прочитання ---
+  // Зміна статусу
   async function updateReadStatus(
     messageId,
     newReadStatus,
@@ -277,21 +276,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const actionText = newReadStatus
       ? "позначити як прочитане"
       : "позначити як непрочитане";
-    if (
-      !confirm(
-        `Ви впевнені, що хочете ${actionText} це повідомлення (ID: ${messageId})?`
-      )
-    ) {
+    if (!confirm(`Ви впевнені, що хочете ${actionText} це повідомлення?`)) {
       return;
     }
     updateReadStatus(messageId, newReadStatus, false);
   }
 
-  // --- Видалення повідомлення ---
+  // Видалення повідомлення
   async function deleteMessage(messageId, senderName) {
     if (
       !confirm(
-        `Ви впевнені, що хочете видалити повідомлення від "${senderName}" (ID: ${messageId})?`
+        `Ви впевнені, що хочете видалити повідомлення від "${senderName}"?`
       )
     ) {
       return;
@@ -324,11 +319,9 @@ document.addEventListener("DOMContentLoaded", () => {
       alert("Сталася помилка сервера при видаленні.");
     }
   }
-
-  // --- Фільтри та Пошук ---
+  // Фільтри та Пошук
   messageSearchInput.addEventListener("input", () => fetchAndDisplayMessages());
   readStatusFilter.addEventListener("change", () => fetchAndDisplayMessages());
-  // debounce для пошуку
 
   // Початкове завантаження
   if (token) {

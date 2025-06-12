@@ -1,7 +1,6 @@
 // backend/config/db.js
 const mysql = require("mysql2/promise");
-// Дуже важливо, щоб цей рядок був на самому початку і шлях був правильним
-const path = require("path"); // Додайте це на початку файлу
+const path = require("path");
 require("dotenv").config({ path: path.resolve(__dirname, "..", "..", ".env") });
 
 const pool = mysql.createPool({

@@ -25,7 +25,7 @@ const Client = {
         cooperationStartDate,
       ]);
       return {
-        id: result.insertId,
+        id: result.insertId, // Повертаємо ID створеного клієнта
         clientCompanyName,
         contactPersonLastName,
         contactPersonFirstName,
@@ -33,14 +33,21 @@ const Client = {
       };
     } catch (error) {
       if (error.code === "ER_DUP_ENTRY") {
+        // Унікальні індекси на телефон та email
         if (error.message.includes("ContactPersonPhone"))
+          // Припускаємо, що індекс називається так або містить це поле
           throw new Error(
-            "Client with this contact phone number already exists."
+            "Клієнт з таким контактним номером телефону вже існує."
           );
         if (error.message.includes("ContactPersonEmail"))
-          throw new Error("Client with this contact email already exists.");
+          // Припускаємо, що індекс називається так або містить це поле
+          throw new Error(
+            "Клієнт з такою контактною електронною поштою вже існує."
+          );
+        // Якщо є інші унікальні поля, додати їх обробку
+        throw new Error("Клієнт з такими даними вже існує.");
       }
-      throw error;
+      throw error; // Перекидаємо інші помилки
     }
   },
 
@@ -63,7 +70,7 @@ const Client = {
       params.push(term, term, term, term, term);
     }
     sql +=
-      " ORDER BY ClientCompanyName, ContactPersonLastName, ContactPersonFirstName";
+      " ORDER BY COALESCE(ClientCompanyName, ''), ContactPersonLastName, ContactPersonFirstName"; // Сортування з урахуванням можливого NULL в ClientCompanyName
     const [rows] = await pool.query(sql, params);
     return rows;
   },
@@ -78,7 +85,7 @@ const Client = {
       WHERE ClientID = ?
     `;
     const [rows] = await pool.query(sql, [clientId]);
-    return rows[0];
+    return rows.length > 0 ? rows[0] : null; // Повертаємо null, якщо не знайдено
   },
 
   async update(clientId, data) {
@@ -94,22 +101,27 @@ const Client = {
 
     const fieldsToUpdate = {};
     if (clientCompanyName !== undefined)
-      fieldsToUpdate.ClientCompanyName = clientCompanyName;
+      fieldsToUpdate.ClientCompanyName = clientCompanyName; // Дозволяємо null
     if (contactPersonLastName !== undefined)
       fieldsToUpdate.ContactPersonLastName = contactPersonLastName;
     if (contactPersonFirstName !== undefined)
       fieldsToUpdate.ContactPersonFirstName = contactPersonFirstName;
     if (contactPersonMiddleName !== undefined)
-      fieldsToUpdate.ContactPersonMiddleName = contactPersonMiddleName;
+      fieldsToUpdate.ContactPersonMiddleName = contactPersonMiddleName; // Дозволяємо null
     if (contactPersonPhone !== undefined)
       fieldsToUpdate.ContactPersonPhone = contactPersonPhone;
     if (contactPersonEmail !== undefined)
-      fieldsToUpdate.ContactPersonEmail = contactPersonEmail;
+      fieldsToUpdate.ContactPersonEmail = contactPersonEmail; // Дозволяємо null
     if (cooperationStartDate !== undefined)
       fieldsToUpdate.CooperationStartDate = cooperationStartDate;
 
     if (Object.keys(fieldsToUpdate).length === 0) {
-      return { changedRows: 0, message: "No fields to update provided." };
+      // Повертаємо об'єкт, схожий на результат запиту, щоб контролер міг це обробити
+      return {
+        affectedRows: 1,
+        changedRows: 0,
+        message: "Дані для оновлення не надано.",
+      };
     }
 
     const fieldEntries = Object.entries(fieldsToUpdate);
@@ -129,31 +141,34 @@ const Client = {
       if (error.code === "ER_DUP_ENTRY") {
         if (error.message.includes("ContactPersonPhone"))
           throw new Error(
-            "Update failed. Client with this contact phone number already exists."
+            "Оновлення не вдалося. Клієнт з таким контактним номером телефону вже існує."
           );
         if (error.message.includes("ContactPersonEmail"))
           throw new Error(
-            "Update failed. Client with this contact email already exists."
+            "Оновлення не вдалося. Клієнт з такою контактною електронною поштою вже існує."
           );
+        throw new Error(
+          "Оновлення не вдалося. Клієнт з такими даними вже існує."
+        );
       }
       throw error;
     }
   },
 
   async delete(clientId) {
-    // Перевірка, чи клієнт пов'язаний з кампаніями
-    const checkCampaignsSql =
-      "SELECT 1 FROM Campaigns WHERE ClientID = ? LIMIT 1";
-    const [campaignRows] = await pool.query(checkCampaignsSql, [clientId]);
-    if (campaignRows.length > 0) {
-      throw new Error(
-        "Cannot delete client. This client is associated with one or more campaigns. Please reassign or delete campaigns first."
-      );
-    }
-
     const sql = "DELETE FROM Clients WHERE ClientID = ?";
-    const [result] = await pool.query(sql, [clientId]);
-    return result.affectedRows > 0;
+    try {
+      const [result] = await pool.query(sql, [clientId]);
+      return result.affectedRows > 0; // Повертає true, якщо було видалено, false - якщо ні (не знайдено)
+    } catch (error) {
+      if (error.code === "ER_ROW_IS_REFERENCED_2") {
+        // Помилка виникає, якщо є зовнішній ключ, що посилається на цього клієнта (наприклад, з таблиці Campaigns)
+        throw new Error(
+          "Неможливо видалити клієнта, оскільки він пов'язаний з рекламними кампаніями. Спочатку видаліть або перепризначте відповідні кампанії."
+        );
+      }
+      throw error; // Перекидаємо інші помилки
+    }
   },
 };
 

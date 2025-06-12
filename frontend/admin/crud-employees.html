@@ -5,13 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Адмін-панель - Працівники</title>
     <link href="../css/custom.css" rel="stylesheet" />
-    <!-- Ваш основний файл стилів -->
     <link href="../css/admin-common.css" rel="stylesheet" />
-    <!-- Спільні стилі для адмінки -->
     <link href="../css/admin-crud.css" rel="stylesheet" />
-    <!-- Стилі для CRUD сторінок (таблиці, модалки) -->
     <style>
-      /* Додаткові стилі, якщо потрібні саме для цієї сторінки */
+      /* Додаткові стилі, саме для цієї сторінки */
       .employee-photo-thumbnail {
         width: 40px;
         height: 40px;
@@ -49,19 +46,45 @@
       }
       .dismissed-employee-row td {
         /* Стиль для звільнених */
-        color: var(
-          --text-light-color
-        ) !important; /* Важливо, щоб перебити інші стилі */
+        color: var(--text-light-color) !important;
         font-style: italic;
-        /* text-decoration: line-through; */ /* Опціонально */
       }
       .dismissed-employee-row:hover {
-        background-color: #fff5f5 !important; /* Легкий червонуватий фон при наведенні */
+        background-color: #fff5f5 !important;
       }
     </style>
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
-    <!-- Додаємо клас для спільних стилів адмінки -->
     <aside class="admin-sidebar">
       <div class="admin-logo">
         <a href="../index.html">На сайт</a>
@@ -118,14 +141,9 @@
                 <th>Фото</th>
                 <th>Прізвище</th>
                 <th>Ім'я</th>
-                <!-- <th>По батькові</th> Прибрали для компактності -->
                 <th>Посада</th>
                 <th>Телефон</th>
-                <!-- <th>Email</th> Прибрали для компактності -->
-                <!-- <th>Дата прийому</th> Прибрали для компактності -->
-                <!-- <th>Зарплата</th> Прибрали для компактності -->
                 <th>Статус</th>
-                <!-- Буде "Активний" або "Звільнений [дата]" -->
                 <th>Дії</th>
               </tr>
             </thead>
@@ -150,12 +168,10 @@
 
     <!-- Модальне вікно для форми створення/редагування працівника -->
     <div id="employeeModal" class="modal">
-      <!-- Залишаємо display:none за замовчуванням, JS буде керувати класом .active -->
       <div class="modal-content card">
         <span class="close-modal-button">×</span>
         <h2 id="modalTitle">Додати Працівника</h2>
         <form id="employeeForm" enctype="multipart/form-data">
-          <!-- enctype для завантаження файлів -->
           <input type="hidden" id="employeeId" name="employeeId" />
 
           <div class="form-grid-2-col">

@@ -9,6 +9,15 @@ router.get("/", serviceController.getAllServices); // Перегляд спис�
 router.get("/:id", serviceController.getServiceById); // Перегляд конкретної послуги
 
 // ADMIN ROUTES (тільки для адміністраторів)
+
+// Новий маршрут
+router.patch(
+  "/update-prices-batch",
+  isAuthenticated,
+  isAdmin,
+  serviceController.updatePricesBatch // Новий метод в контролері
+);
+
 router.post("/", isAuthenticated, isAdmin, serviceController.createService); // Створення нової послуги
 router.put("/:id", isAuthenticated, isAdmin, serviceController.updateService); // Оновлення послуги
 router.delete(

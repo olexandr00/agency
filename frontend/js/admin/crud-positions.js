@@ -94,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // --- Показ/приховування повідомлень (копіюємо з crud-users.js або виносимо в спільний util) ---
+  // Показ/приховування повідомлень
   function showLoader() {
     positionsLoader.style.display = "block";
     positionsError.style.display = "none";
@@ -167,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const positionData = {
       positionName: positionForm.positionName.value,
       positionDescription: positionForm.positionDescription.value,
-      // BasePositionRate може бути null, якщо поле порожнє
       basePositionRate: positionForm.basePositionRate.value
         ? parseFloat(positionForm.basePositionRate.value)
         : null,
@@ -225,11 +224,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // --- Видалення посади ---
+  // Видалення посади
   async function deletePosition(positionId, positionName) {
     if (
       !confirm(
-        `Ви впевнені, що хочете видалити посаду "${positionName}" (ID: ${positionId})? Це може вплинути на працівників, які займають цю посаду.`
+        `Ви впевнені, що хочете видалити посаду "${positionName}"? Це може вплинути на працівників, які займають цю посаду.`
       )
     ) {
       return;
@@ -252,7 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(result.message || "Посаду успішно видалено!");
         fetchAndDisplayPositions(positionSearchInput.value.trim());
       } else {
-        // Бекенд має повертати повідомлення про помилку, якщо посаду не можна видалити (наприклад, вона використовується)
         alert(
           `Помилка видалення: ${
             result.message || "Не вдалося видалити посаду."
@@ -265,7 +263,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // --- Пошук ---
+  // Пошук
   let searchTimeout;
   positionSearchInput.addEventListener("input", () => {
     clearTimeout(searchTimeout);

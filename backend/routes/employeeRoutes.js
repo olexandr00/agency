@@ -16,15 +16,12 @@ router.get("/", flexibleAuth, employeeController.getAllEmployees);
 
 // Інші маршрути залишаються зі строгою аутентифікацією та перевіркою адміна
 router.post("/", isAuthenticated, isAdmin, employeeController.createEmployee);
-// Для getEmployeeById, якщо деталі може бачити тільки адмін:
 router.get(
   "/:id",
   isAuthenticated,
   isAdmin,
   employeeController.getEmployeeById
 );
-// Якщо деталі може бачити і авторизований користувач (наприклад, свої дані, хоча це не той випадок):
-// router.get('/:id', isAuthenticated, employeeController.getEmployeeById);
 router.put("/:id", isAuthenticated, isAdmin, employeeController.updateEmployee);
 router.delete(
   "/:id",

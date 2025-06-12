@@ -1,6 +1,6 @@
 // backend/controllers/employeeController.js
 const Employee = require("../models/Employee");
-const { uploadEmployeePhoto } = require("../middleware/uploadMiddleware"); // Переконайтесь, що цей шлях правильний
+const { uploadEmployeePhoto } = require("../middleware/uploadMiddleware");
 const path = require("path");
 
 const projectRootForController = path.resolve(__dirname, "..", "..");

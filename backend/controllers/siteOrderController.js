@@ -5,46 +5,44 @@ const Service = require("../models/Service");
 const siteOrderController = {
   createSiteOrder: async (req, res, next) => {
     try {
-      const userId = req.user.userId;
+      const userId = req.user ? req.user.userId : null;
       const {
         customerName,
         customerEmail,
         customerPhone,
         customerNotes,
-        items,
+        items, // масив об'єктів { serviceId, quantity }
       } = req.body;
 
       if (!customerName || !customerEmail || !customerPhone) {
         return res
           .status(400)
-          .json({ message: "Customer name, email, and phone are required." });
+          .json({ message: "Ім'я, email та телефон клієнта є обов'язковими." });
       }
       if (!items || !Array.isArray(items) || items.length === 0) {
         return res
           .status(400)
-          .json({ message: "Order items (services) are required." });
+          .json({ message: "Позиції замовлення (послуги) є обов'язковими." });
       }
 
       const servicesInOrder = [];
       for (const item of items) {
         if (!item.serviceId || !item.quantity || parseInt(item.quantity) <= 0) {
-          return res
-            .status(400)
-            .json({
-              message:
-                "Each order item must have a valid serviceId and a positive quantity.",
-            });
+          return res.status(400).json({
+            message:
+              "Кожна позиція замовлення повинна мати дійсний ID послуги та додатню кількість.",
+          });
         }
         const service = await Service.findById(item.serviceId);
         if (!service) {
           return res
             .status(400)
-            .json({ message: `Service with ID ${item.serviceId} not found.` });
+            .json({ message: `Послугу з ID ${item.serviceId} не знайдено.` });
         }
         servicesInOrder.push({
-          serviceId: service.ServiceID,
+          serviceId: service.ServiceID, // Використовуємо ID з об'єкта послуги
           quantity: parseInt(item.quantity),
-          priceAtOrder: parseFloat(service.BasePrice),
+          priceAtOrder: parseFloat(service.BasePrice), // Ціна на момент замовлення
         });
       }
 
@@ -54,56 +52,81 @@ const siteOrderController = {
         customerPhone,
         customerNotes,
       };
+      // Передаємо userId, який може бути null, якщо користувач не автентифікований
       const createdOrder = await SiteOrder.create(
         userId,
         orderData,
         servicesInOrder
       );
-      // createdOrder тепер повний об'єкт замовлення з усіма полями
 
       res.status(201).json({
-        message: "Order created successfully. We will contact you shortly.",
+        message:
+          "Замовлення успішно створено. Ми зв'яжемося з вами найближчим часом.",
         order: {
-          // Повертаємо вибрані поля для клієнта
-          orderId: createdOrder.OrderID, // Внутрішній ID (може бути корисним для деяких внутрішніх логів)
-          publicOrderId: createdOrder.PublicOrderID, // Публічний номер замовлення
+          orderId: createdOrder.OrderID,
+          publicOrderId: createdOrder.PublicOrderID,
           totalAmount: createdOrder.TotalAmount,
           status: createdOrder.OrderStatus,
-          orderDate: createdOrder.OrderDate, // Додаємо дату
+          orderDate: createdOrder.OrderDate,
         },
       });
     } catch (error) {
-      console.error("[siteOrderController.createSiteOrder] Error:", error);
-      if (
-        error.message.includes("not found") ||
-        error.message.includes("Cannot create an order with no services")
-      ) {
-        return res.status(400).json({ message: error.message });
+      console.error("[SiteOrderController.createSiteOrder] Помилка:", error);
+      if (error.message && typeof error.message === "string") {
+        if (error.message.toLowerCase().includes("not found")) {
+          return res.status(400).json({
+            message:
+              "Помилка створення замовлення: зазначеного користувача або послугу не знайдено.",
+          });
+        }
+        if (
+          error.message
+            .toLowerCase()
+            .includes("cannot create an order with no services") ||
+          error.message.includes("неможливо створити замовлення без послуг")
+        ) {
+          return res
+            .status(400)
+            .json({ message: "Неможливо створити замовлення без послуг." });
+        }
+        if (error.message.toLowerCase().includes("validation failed")) {
+          return res.status(400).json({
+            message: "Помилка валідації даних при створенні замовлення.",
+          });
+        }
       }
       next(error);
     }
   },
 
   getAllSiteOrders: async (req, res, next) => {
+    // Доступно адміну для всіх замовлень, або користувачу для своїх
     try {
       const { search, status, userId: queryUserId } = req.query;
       let userIdFilter = null;
 
+      // Якщо користувач не адмін, він бачить тільки свої замовлення
       if (req.user.role !== "admin") {
         userIdFilter = req.user.userId;
       } else if (queryUserId) {
         const parsedUserId = parseInt(queryUserId);
-        if (!isNaN(parsedUserId)) userIdFilter = parsedUserId;
+        if (!isNaN(parsedUserId) && parsedUserId > 0) {
+          userIdFilter = parsedUserId;
+        } else if (queryUserId) {
+          return res.status(400).json({
+            message: "Невірний формат ID користувача для фільтрації.",
+          });
+        }
       }
 
       const orders = await SiteOrder.getAll({
         searchTerm: search,
         userIdFilter: userIdFilter,
-        statusFilter: req.user.role === "admin" && status ? status : null,
+        statusFilter: req.user.role === "admin" && status ? status : null, // Фільтр статусу для адміна
       });
       res.status(200).json(orders);
     } catch (error) {
-      console.error("[siteOrderController.getAllSiteOrders] Error:", error);
+      console.error("[SiteOrderController.getAllSiteOrders] Помилка:", error);
       next(error);
     }
   },
@@ -114,21 +137,30 @@ const siteOrderController = {
       const order = await SiteOrder.findById(id);
 
       if (!order) {
-        return res.status(404).json({ message: "Order not found." });
+        return res.status(404).json({ message: "Замовлення не знайдено." });
       }
 
-      if (req.user.role !== "admin" && order.UserID !== req.user.userId) {
+      if (
+        req.user.role !== "admin" &&
+        order.UserID &&
+        order.UserID !== req.user.userId
+      ) {
+        return res.status(403).json({
+          message:
+            "Доступ заборонено. Ви можете переглядати лише власні замовлення.",
+        });
+      }
+
+      if (req.user.role !== "admin" && !order.UserID) {
         return res
           .status(403)
-          .json({
-            message: "Access denied. You can only view your own orders.",
-          });
+          .json({ message: "Доступ до цього замовлення обмежено." });
       }
 
       res.status(200).json(order);
     } catch (error) {
       console.error(
-        `[siteOrderController.getSiteOrderById] Error for ID ${req.params.id}:`,
+        `[SiteOrderController.getSiteOrderById] Помилка для ID ${req.params.id}:`,
         error
       );
       next(error);
@@ -136,71 +168,81 @@ const siteOrderController = {
   },
 
   updateSiteOrderStatus: async (req, res, next) => {
+    // Доступно тільки адміну
     try {
-      const { id } = req.params; // Це може бути PublicOrderID або OrderID
+      const { id } = req.params;
       const { status } = req.body;
 
       if (!status) {
         return res
           .status(400)
-          .json({ message: "New order status is required." });
+          .json({ message: "Новий статус замовлення є обов'язковим." });
       }
 
       const orderToUpdate = await SiteOrder.findById(id); // Знаходимо замовлення за будь-яким ID
       if (!orderToUpdate) {
-        return res.status(404).json({ message: "Order not found." });
+        return res
+          .status(404)
+          .json({ message: "Замовлення для оновлення статусу не знайдено." });
       }
 
       const success = await SiteOrder.updateStatus(
-        orderToUpdate.OrderID,
+        orderToUpdate.OrderID, // Оновлюємо за внутрішнім OrderID
         status
-      ); // Оновлюємо за внутрішнім OrderID
-      if (!success) {
-        return res
-          .status(400)
-          .json({
-            message: "Failed to update order status or order not found.",
-          });
-      }
-      // Повертаємо оновлене замовлення, знайдене за PublicOrderID для консистентності
-      const updatedOrder = await SiteOrder.findById(
-        orderToUpdate.PublicOrderID
       );
+      if (!success) {
+        return res.status(400).json({
+          message:
+            "Не вдалося оновити статус замовлення. Можливо, вказано недійсний статус або замовлення не знайдено.",
+        });
+      }
+
+      const updatedOrder = await SiteOrder.findById(orderToUpdate.OrderID);
       res.status(200).json({
-        message: "Order status updated successfully.",
+        message: "Статус замовлення успішно оновлено.",
         order: updatedOrder,
       });
     } catch (error) {
       console.error(
-        `[siteOrderController.updateSiteOrderStatus] Error for ID ${req.params.id}:`,
+        `[SiteOrderController.updateSiteOrderStatus] Помилка для ID ${req.params.id}:`,
         error
       );
-      if (error.message.includes("Invalid order status")) {
-        return res.status(400).json({ message: error.message });
+      if (
+        error.message &&
+        typeof error.message === "string" &&
+        (error.message.toLowerCase().includes("invalid order status") ||
+          error.message.includes("недійсний статус замовлення"))
+      ) {
+        return res
+          .status(400)
+          .json({ message: "Вказано недійсний статус замовлення." });
       }
       next(error);
     }
   },
 
   deleteSiteOrder: async (req, res, next) => {
+    // Доступно тільки адміну
     try {
       const { id } = req.params;
       const orderToDelete = await SiteOrder.findById(id);
       if (!orderToDelete) {
-        return res.status(404).json({ message: "Order not found." });
-      }
-      const success = await SiteOrder.delete(orderToDelete.OrderID);
-      if (!success) {
         return res
           .status(404)
-          .json({
-            message: "Order could not be deleted or was already deleted.",
-          });
+          .json({ message: "Замовлення для видалення не знайдено." });
       }
-      res.status(200).json({ message: "Order deleted successfully." });
+
+      const success = await SiteOrder.delete(orderToDelete.OrderID); // Видаляємо за внутрішнім OrderID
+      if (!success) {
+        // Можливо, замовлення вже було видалено
+        return res.status(404).json({
+          message: "Замовлення не вдалося видалити або його вже було видалено.",
+        });
+      }
+      res.status(200).json({ message: "Замовлення успішно видалено." });
     } catch (error) {
       console.error(
-        `[siteOrderController.deleteSiteOrder] Error for ID ${req.params.id}:`,
+        `[SiteOrderController.deleteSiteOrder] Помилка для ID ${req.params.id}:`,
         error
       );
       next(error);

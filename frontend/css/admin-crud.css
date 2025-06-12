@@ -25,22 +25,22 @@
 .crud-table th,
 .crud-table td {
   text-align: left;
-  padding: 0.75rem 1rem; /* 12px 16px */
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
 }
 .crud-table thead th {
-  background-color: #f3f4f6; /* Світло-сірий фон для заголовків таблиці */
-  font-weight: 600; /* semibold */
+  background-color: #f3f4f6;
+  font-weight: 600;
   color: var(--text-light-color);
   text-transform: uppercase;
-  font-size: 0.75rem; /* 12px */
+  font-size: 0.75rem;
   letter-spacing: 0.05em;
 }
 .crud-table tbody tr:last-child td {
   border-bottom: none;
 }
 .crud-table tbody tr:hover {
-  background-color: #f9fafb; /* Дуже світлий фон при наведенні */
+  background-color: #f9fafb;
 }
 
 .crud-table .button-small {
@@ -50,6 +50,21 @@
   margin-right: 0.3rem;
 }
 .crud-table .button-small:last-child {
+  margin-right: 0;
+}
+
+.crud-table .actions-cell {
+  white-space: nowrap; /* Забороняє перенос вмісту на новий рядок */
+}
+
+.crud-table .actions-cell .button {
+  display: inline-block;
+  margin-right: 5px;
+  vertical-align: middle; /* Для кращого вирівнювання, якщо кнопки різної висоти */
+}
+
+/* Щоб остання кнопка не мала правого відступу (опціонально) */
+.crud-table .actions-cell .button:last-child {
   margin-right: 0;
 }
 
@@ -64,16 +79,15 @@
   height: 100%;
   overflow: auto;
   background-color: rgba(0, 0, 0, 0.5); /* Напівпрозорий фон */
-  justify-content: center; /* Для flex центрування */
-  align-items: center; /* Для flex центрування */
+  justify-content: center;
+  align-items: center;
 }
 .modal.active {
-  display: flex; /* Показуємо і центруємо через flex */
+  display: flex;
 }
 .modal-content {
-  /* Наслідує .card */
   position: relative;
-  margin: auto; /* Для старого методу центрування, якщо flex не підтримується скрізь */
+  margin: auto;
   padding: 2rem;
   width: 90%;
   max-width: 550px; /* Максимальна ширина модального вікна */
@@ -92,8 +106,8 @@
 
 .close-modal-button {
   color: var(--secondary-color);
-  float: right; /* Старий добрий float */
-  font-size: 1.75rem; /* 28px */
+  float: right;
+  font-size: 1.75rem;
   font-weight: bold;
   position: absolute; /* Щоб було поверх контенту */
   top: 10px;

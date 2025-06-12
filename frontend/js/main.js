@@ -1,25 +1,22 @@
 // frontend/js/main.js
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("Frontend JavaScript DOMContentLoaded!");
-
-  // Ініціалізація Auth має йти першою
+  // Ініціалізація Auth
   if (typeof Auth !== "undefined" && Auth.init) {
     Auth.init();
   } else {
-    console.error("Auth object or Auth.init method is not available.");
+    console.error("Об'єкт Auth або метод Auth.init недоступний.");
   }
 
   // Ініціалізація Кошика
   if (typeof Cart !== "undefined" && Cart.init) {
     Cart.init();
   } else {
-    console.error("Cart object or Cart.init method is not available.");
+    console.error("Об'єкт Cart або метод Cart.init недоступний.");
   }
 
-  // Об'єкт Main для глобальних функцій, наприклад, сповіщень
+  // Об'єкт Main для глобальних функцій, наприклад сповіщень
   window.Main = {
     showToast: function (message, type = "info") {
-      // type: 'info', 'success', 'error', 'warning'
       let toastContainer = document.getElementById("toast-container");
       if (!toastContainer) {
         // Створюємо контейнер, якщо його немає
@@ -39,12 +36,8 @@ document.addEventListener("DOMContentLoaded", () => {
         toast.addEventListener("animationend", () => {
           // Видаляємо після завершення анімації
           toast.remove();
-          if (!toastContainer.hasChildNodes()) {
-            // toastContainer.remove(); // Можна видаляти, якщо більше немає потреби
-          }
         });
       }, 3000);
     },
-    // createToastContainer метод більше не потрібен тут, створюємо контейнер при першому виклику showToast
   };
 });

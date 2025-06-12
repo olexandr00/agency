@@ -35,10 +35,39 @@
         background-color: #f8f9fa;
       }
     </style>
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
-      <!-- ... (код сайдбару, з активним посиланням на "Замовлення з сайту") ... -->
       <div class="admin-logo">
         <a href="../index.html">На сайт</a>
       </div>
@@ -75,7 +104,6 @@
       <section class="content-area">
         <div class="content-header">
           <h1>Список Замовлень</h1>
-          <!-- Кнопка "Додати замовлення" тут зазвичай не потрібна, вони створюються з сайту -->
         </div>
 
         <div class="search-filter-bar">
@@ -136,7 +164,7 @@
         <div id="orderDetailsContent">
           <ul class="order-details-list">
             <li>
-              <strong>Користувач (ID):</strong>
+              <strong>Користувач:</strong>
               <span id="modalOrderUser"></span>
             </li>
             <li>

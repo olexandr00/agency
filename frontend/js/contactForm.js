@@ -3,9 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const contactForm = document.getElementById("contactForm");
   const formMessage = document.getElementById("contact-form-message");
   const senderPhoneInput = document.getElementById("senderPhone"); // Отримуємо поле телефону
-  const API_URL_MESSAGES = "http://localhost:3000/api/contact-messages"; // Переконайтеся, що URL правильний
+  const API_URL_MESSAGES = "http://localhost:3000/api/contact-messages";
 
-  // 1. Обробник для поля телефону, щоб дозволити тільки цифри (та опціонально "+")
+  // Обробник для поля телефону, щоб дозволити тільки цифри (та опціонально "+")
   if (senderPhoneInput) {
     senderPhoneInput.addEventListener("input", function (e) {
       let currentValue = e.target.value;
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
       if (formMessage) {
         formMessage.textContent = "";
-        formMessage.className = "form-message"; // Скинути класи
+        formMessage.className = "form-message";
       }
 
       const formData = new FormData(contactForm);
@@ -79,8 +79,6 @@ document.addEventListener("DOMContentLoaded", () => {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // Додайте Authorization header, якщо ваш ендпоінт contact-messages його вимагає
-            // 'Authorization': `Bearer ${Auth.getToken()}`
           },
           body: JSON.stringify(data),
         });
@@ -92,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
             formMessage.textContent =
               result.message ||
               "Ваше повідомлення успішно відправлено! Ми зв'яжемося з вами найближчим часом.";
-            formMessage.classList.remove("error"); // Переконатись, що клас помилки видалено
+            formMessage.classList.remove("error");
             formMessage.classList.add("success");
           }
           contactForm.reset();
@@ -100,12 +98,12 @@ document.addEventListener("DOMContentLoaded", () => {
           if (formMessage) {
             formMessage.textContent =
               result.message || "Сталася помилка при відправці повідомлення.";
-            formMessage.classList.remove("success"); // Переконатись, що клас успіху видалено
+            formMessage.classList.remove("success");
             formMessage.classList.add("error");
           }
         }
       } catch (error) {
-        console.error("Contact form submission error:", error);
+        console.error("Помилка відправки контактної форми:", error);
         if (formMessage) {
           formMessage.textContent =
             "Не вдалося відправити повідомлення. Перевірте ваше інтернет-з'єднання або спробуйте пізніше.";
@@ -120,6 +118,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   } else {
-    console.warn('Contact form with ID "contactForm" not found on this page.');
+    console.warn(
+      'Контактну форму з ID "contactForm" не знайдено на цій сторінці.'
+    );
   }
 });

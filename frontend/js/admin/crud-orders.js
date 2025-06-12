@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const orderIdHiddenInput = document.getElementById("orderIdHidden");
   const orderFormMessage = document.getElementById("order-form-message");
 
-  let searchTimeout; // Для debounce пошуку
+  let searchTimeout;
 
   async function fetchAndDisplayOrders() {
     showLoader();
@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       let url = new URL(API_URL_ORDERS);
-      if (searchTerm) url.searchParams.append("search", searchTerm); // Бекенд тепер шукає по PublicOrderID
+      if (searchTerm) url.searchParams.append("search", searchTerm);
       if (status) url.searchParams.append("status", status);
       if (userId && !isNaN(parseInt(userId))) {
         // Надсилаємо userId тільки якщо це число
@@ -97,7 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = ordersTableBody.insertRow();
       const publicOrderIdCell = row.insertCell();
       publicOrderIdCell.textContent = order.PublicOrderID || "N/A";
-      publicOrderIdCell.title = `Внутрішній ID: ${order.OrderID}`; // Можна залишити для адміна
 
       row.insertCell().textContent = order.CustomerName || "N/A";
       row.insertCell().textContent = order.CustomerEmail || "N/A";
@@ -192,12 +191,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (modalTitleOrderId)
         modalTitleOrderId.textContent = order.PublicOrderID || "N/A";
-      if (orderIdHiddenInput) orderIdHiddenInput.value = order.OrderID; // Внутрішній ID для оновлення статусу
+      if (orderIdHiddenInput) orderIdHiddenInput.value = order.OrderID;
 
       if (modalOrderUser)
-        modalOrderUser.textContent = `${order.UserUsername || "N/A"} (UserID: ${
-          order.UserID
-        })`;
+        modalOrderUser.textContent = `${order.UserUsername || "N/A"}`;
       if (modalOrderCustomerName)
         modalOrderCustomerName.textContent = order.CustomerName || "N/A";
       if (modalOrderCustomerEmail)

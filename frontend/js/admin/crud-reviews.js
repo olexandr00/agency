@@ -107,12 +107,8 @@ document.addEventListener("DOMContentLoaded", () => {
     reviews.forEach((review) => {
       const row = reviewsTableBody.insertRow();
 
-      // --- ЗМІНА ДЛЯ АВТОРА ---
-      // Показуємо тільки ім'я користувача, без ID
       row.insertCell().textContent = review.UserName || "Анонім";
 
-      // --- ЗМІНА ДЛЯ ПОСЛУГИ ---
-      // Показуємо тільки назву послуги, або "Загальний", без ID
       row.insertCell().textContent = review.ServiceName || "Загальний";
 
       const textCell = row.insertCell();
@@ -126,7 +122,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const ratingCell = row.insertCell();
       const ratingValue = review.Rating;
-      // Лог можна закоментувати, якщо все працює
 
       if (
         ratingValue !== null &&
@@ -212,16 +207,15 @@ document.addEventListener("DOMContentLoaded", () => {
   async function openReviewModal(review) {
     currentEditingReviewId = review.ReviewID;
     if (modalTitle)
-      modalTitle.textContent = `Редагування Відгуку ID: ${review.ReviewID}`;
+      modalTitle.textContent = `Редагування Відгуку Користувача: ${review.UserName}`;
 
-    // В модалці ID все ще можуть бути корисні для адміна, тому залишаємо їх тут
     if (modalReviewAuthor)
       modalReviewAuthor.textContent = `${review.UserName || "N/A"} (Email: ${
         review.UserEmail || "не вказано"
-      }, UserID: ${review.UserID})`;
+      })`;
     if (modalReviewService)
       modalReviewService.textContent = review.ServiceName
-        ? `${review.ServiceName} (ServiceID: ${review.ServiceID || "N/A"})`
+        ? `${review.ServiceName}`
         : "Загальний відгук про агентство";
 
     if (modalReviewDate)
@@ -379,9 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function deleteReview(reviewId, authorName) {
     if (
       !confirm(
-        `Ви впевнені, що хочете видалити відгук від "${
-          authorName || "N/A"
-        }" (ID: ${reviewId})?`
+        `Ви впевнені, що хочете видалити відгук від "${authorName || "N/A"}"?`
       )
     )
       return;
@@ -440,7 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof fetchAndDisplayReviews === "function") fetchAndDisplayReviews();
   } else {
     showError("Необхідна авторизація для доступу до цієї сторінки.");
-    const mainContentArea = document.querySelector(".content-area"); // Або ваш селектор
+    const mainContentArea = document.querySelector(".content-area");
     if (mainContentArea) mainContentArea.style.display = "none";
   }
 });

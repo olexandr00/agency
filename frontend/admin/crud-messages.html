@@ -37,10 +37,39 @@
         overflow-y: auto;
       }
     </style>
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
-      <!-- ... (код сайдбару, з активним посиланням на "Повідомлення") ... -->
       <div class="admin-logo">
         <a href="../index.html">На сайт</a>
       </div>
@@ -75,7 +104,6 @@
       <section class="content-area">
         <div class="content-header">
           <h1>Список Повідомлень</h1>
-          <!-- Кнопка "Додати" тут не потрібна -->
         </div>
 
         <div class="search-filter-bar">
@@ -136,7 +164,7 @@
         <h2 id="modalTitle">Деталі Повідомлення</h2>
         <div id="messageDetailsContent">
           <ul class="order-details-list">
-            <!-- Використаємо той самий стиль, що й для деталей замовлення -->
+            <!-- Той самий стиль, що й для деталей замовлення -->
             <li>
               <strong>Відправник:</strong>
               <span id="modalMessageSenderName"></span>

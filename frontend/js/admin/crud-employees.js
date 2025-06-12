@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
     : null;
   const employeeIdInput = document.getElementById("employeeId");
   const positionSelect = document.getElementById("positionId");
-  const employeePhoneInput = document.getElementById("phone"); // Отримуємо поле телефону
+  const employeePhoneInput = document.getElementById("phone");
   const employeeFormMessage = document.getElementById("employee-form-message");
   const employeeSearchInput = document.getElementById("employeeSearchInput");
 
@@ -200,25 +200,24 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
     modalTitle.textContent = titleText;
-    employeeForm.reset(); // Скидає всі поля форми, включаючи file input
-    employeePhotoFileInput.value = ""; // Явне очищення поля файлу (для деяких браузерів)
+    employeeForm.reset();
+    employeePhotoFileInput.value = "";
     employeeIdInput.value = "";
     employeeFormMessage.textContent = "";
     employeeFormMessage.className = "form-message";
-    currentPhotoPreview.src = "#"; // або DEFAULT_AVATAR_PATH_ADMIN
+    currentPhotoPreview.src = "#";
     currentPhotoContainer.style.display = "none";
     removePhotoCheckbox.checked = false;
 
     if (employee) {
       employeeIdInput.value = employee.EmployeeID;
-      // Використовуємо employeeForm.elements для доступу до полів за їх name атрибутом
       if (employeeForm.elements.lastName)
         employeeForm.elements.lastName.value = employee.LastName || "";
       if (employeeForm.elements.firstName)
         employeeForm.elements.firstName.value = employee.FirstName || "";
       if (employeeForm.elements.middleName)
         employeeForm.elements.middleName.value = employee.MiddleName || "";
-      if (positionSelect) positionSelect.value = employee.PositionID || ""; // Для <select>
+      if (positionSelect) positionSelect.value = employee.PositionID || "";
       if (employeeForm.elements.phone)
         employeeForm.elements.phone.value = employee.Phone || "";
       if (employeeForm.elements.email)
@@ -247,7 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
         currentPhotoContainer.style.display = "block";
       } else {
         currentPhotoPreview.src = DEFAULT_AVATAR_PATH_ADMIN; // Показуємо дефолт, якщо фото немає
-        currentPhotoContainer.style.display = "block"; // Показуємо контейнер з дефолтним фото
+        currentPhotoContainer.style.display = "block";
       }
     } else {
       // Для нового працівника показуємо дефолтний аватар
@@ -294,19 +293,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const id = employeeIdInput.value;
       const isEditMode = !!id;
-      const formData = new FormData(employeeForm); // FormData автоматично візьме значення з усіх полів
+      const formData = new FormData(employeeForm);
 
       // Додаємо removePhoto, якщо чекбокс відмічено
       if (removePhotoCheckbox && removePhotoCheckbox.checked) {
         formData.append("removePhoto", "true");
       }
 
-      // Валідація телефону перед відправкою
       const phoneValue = formData.get("phone");
       if (phoneValue) {
         const phoneDigits = phoneValue.replace("+", "");
-        // Дозволяємо порожнє значення телефону, якщо воно не обов'язкове (залежить від бекенду)
-        // Якщо телефон введено, то перевіряємо довжину
         if (
           phoneDigits.length > 0 &&
           (phoneDigits.length < 7 || phoneDigits.length > 15)
@@ -318,7 +314,6 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Базова валідація на фронтенді
       if (
         !formData.get("lastName") ||
         !formData.get("firstName") ||
@@ -359,14 +354,12 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const response = await fetch(url, {
           method: method,
-          headers: { Authorization: `Bearer ${token}` }, // Content-Type не потрібен для FormData, браузер встановить сам
+          headers: { Authorization: `Bearer ${token}` },
           body: formData,
         });
-        const result = await response
-          .json()
-          .catch(() => ({
-            message: response.statusText || "Помилка обробки відповіді сервера",
-          }));
+        const result = await response.json().catch(() => ({
+          message: response.statusText || "Помилка обробки відповіді сервера",
+        }));
 
         if (response.ok) {
           employeeFormMessage.textContent =
@@ -394,9 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function deleteEmployee(employeeId, employeeName) {
     if (
-      !confirm(
-        `Ви впевнені, що хочете видалити працівника "${employeeName}" (ID: ${employeeId})?`
-      )
+      !confirm(`Ви впевнені, що хочете видалити працівника "${employeeName}"?`)
     )
       return;
     try {
@@ -446,7 +437,6 @@ document.addEventListener("DOMContentLoaded", () => {
       fetchAndDisplayEmployees();
   } else {
     showError("Необхідна авторизація для перегляду працівників.");
-    // Додатково: приховати елементи керування для неавторизованих
     if (addEmployeeBtn) addEmployeeBtn.style.display = "none";
     const mainContent = document.querySelector(
       ".content-area .content-header + .search-filter-bar, .content-area .table-responsive"

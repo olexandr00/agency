@@ -1,11 +1,11 @@
 /* frontend/css/admin-common.css */
 body.admin-page-body {
-  /* Додамо цей клас до <body> адмін сторінок */
+  /* Клас до <body> адмін сторінок */
   display: flex;
   min-height: 100vh;
   background-color: #f0f2f5;
-  margin: 0; /* Переконатись, що немає відступів за замовчуванням */
-  font-family: var(--font-family-sans); /* Використовуємо змінні з custom.css */
+  margin: 0;
+  font-family: var(--font-family-sans); /* Змінні з custom.css */
 }
 
 .admin-sidebar {
@@ -48,7 +48,7 @@ body.admin-page-body {
 
 .admin-main-content {
   flex-grow: 1;
-  padding: 0; /* Заберемо padding тут, щоб хедер був на всю ширину */
+  padding: 0;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -58,10 +58,10 @@ body.admin-page-body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem; /* Повертаємо padding сюди */
+  padding: 1rem 2rem;
   background-color: var(--surface-color);
   box-shadow: var(--box-shadow);
-  flex-shrink: 0; /* Щоб хедер не стискався */
+  flex-shrink: 0;
 }
 .admin-header .current-page-title h2 {
   font-size: 1.25rem;
@@ -77,13 +77,11 @@ body.admin-page-body {
   font-size: 0.9rem;
 }
 .admin-header .user-info .button {
-  /* Якщо кнопка виходу тут */
   padding: 0.4rem 0.8rem;
   font-size: 0.85rem;
 }
 
 .content-area {
-  /* Додамо цей клас для основного вмісту під хедером */
   padding: 2rem;
   flex-grow: 1;
 }
@@ -102,7 +100,7 @@ body.admin-page-body {
   margin: 0;
 }
 
-/* Стилі для віджетів дашборду (якщо вони тут) */
+/* Стилі для віджетів дашборду  */
 .dashboard-widgets {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));

@@ -2,7 +2,7 @@
 const pool = require("../config/db");
 
 const Campaign = {
-  // Допоміжні функції для перевірки існування ClientID та EmployeeID
+  // Функції для перевірки існування ClientID та EmployeeID
   async _checkClientExists(clientId) {
     if (clientId === null || clientId === undefined) return;
     const [client] = await pool.query(
@@ -10,7 +10,7 @@ const Campaign = {
       [clientId]
     );
     if (client.length === 0) {
-      throw new Error(`Client with ID ${clientId} not found.`);
+      throw new Error(`Клієнта з ID ${clientId} не знайдено.`);
     }
   },
 
@@ -22,7 +22,7 @@ const Campaign = {
     );
     if (employee.length === 0) {
       throw new Error(
-        `Active employee with ID ${employeeId} not found or employee is dismissed.`
+        `Активного працівника з ID ${employeeId} не знайдено або працівник звільнений.`
       );
     }
   },
@@ -39,6 +39,7 @@ const Campaign = {
   }) {
     await this._checkClientExists(clientId);
     if (responsibleEmployeeId) {
+      // Дозволяємо null для responsibleEmployeeId
       await this._checkEmployeeExists(responsibleEmployeeId);
     }
 
@@ -52,23 +53,25 @@ const Campaign = {
         responsibleEmployeeId || null,
         startDate || null,
         endDate || null,
-        campaignBudget || null,
-        campaignStatus || "Planned",
+        campaignBudget === undefined || campaignBudget === ""
+          ? null
+          : campaignBudget, // Дозволяємо null
+        campaignStatus || "Planned", // За замовчуванням "Planned"
         campaignDescription || null,
       ]);
       return { id: result.insertId, campaignName, clientId, campaignStatus };
     } catch (error) {
       if (error.code === "ER_NO_REFERENCED_ROW_2") {
         if (error.message.includes("campaigns_ibfk_1"))
-          throw new Error(
-            `Invalid ClientID: ${clientId}. Client does not exist.`
-          );
+          // Назва обмеження для ClientID
+          throw new Error(`Недійсний ClientID: ${clientId}. Клієнт не існує.`);
         if (error.message.includes("campaigns_ibfk_2"))
+          // Назва обмеження для ResponsibleEmployeeID
           throw new Error(
-            `Invalid ResponsibleEmployeeID: ${responsibleEmployeeId}. Employee does not exist or is dismissed.`
+            `Недійсний ResponsibleEmployeeID: ${responsibleEmployeeId}. Працівник не існує або звільнений.`
           );
       }
-      throw error;
+      throw error; // Перекидаємо інші помилки
     }
   },
 
@@ -78,7 +81,8 @@ const Campaign = {
         c.CampaignID, c.CampaignName, 
         c.ClientID, cl.ClientCompanyName, cl.ContactPersonFirstName AS ClientFirstName, cl.ContactPersonLastName AS ClientLastName,
         c.ResponsibleEmployeeID, CONCAT(e.FirstName, ' ', e.LastName) AS ResponsibleEmployeeName,
-        c.StartDate, c.EndDate, c.CampaignBudget, c.CampaignStatus, c.CampaignDescription
+        c.StartDate, c.EndDate, c.CampaignBudget, c.CampaignStatus, c.CampaignDescription,
+        (SELECT SUM(s.BasePrice * cs.ServiceQuantity) FROM Campaign_Services cs JOIN Services s ON cs.ServiceID = s.ServiceID WHERE cs.CampaignID = c.CampaignID) AS ActualCampaignCost
       FROM Campaigns c
       JOIN Clients cl ON c.ClientID = cl.ClientID
       LEFT JOIN Employees e ON c.ResponsibleEmployeeID = e.EmployeeID 
@@ -101,11 +105,11 @@ const Campaign = {
     }
     if (filters.clientId) {
       whereClauses.push(`c.ClientID = ?`);
-      params.push(filters.clientId);
+      params.push(parseInt(filters.clientId)); // Переконуємось, що це число
     }
     if (filters.employeeId) {
       whereClauses.push(`c.ResponsibleEmployeeID = ?`);
-      params.push(filters.employeeId);
+      params.push(parseInt(filters.employeeId)); // Переконуємось, що це число
     }
 
     if (whereClauses.length > 0) {
@@ -122,7 +126,7 @@ const Campaign = {
       SELECT 
         c.CampaignID, c.CampaignName, 
         c.ClientID, cl.ClientCompanyName, cl.ContactPersonFirstName AS ClientFirstName, cl.ContactPersonLastName AS ClientLastName,
-        c.ResponsibleEmployeeID, CONCAT(e.FirstName, ' ', e.LastName) AS ResponsibleEmployeeName, e.Email AS ResponsibleEmployeeEmail,
+        c.ResponsibleEmployeeID, e.EmployeeID AS RespEmployeeID_raw, CONCAT(e.FirstName, ' ', e.LastName) AS ResponsibleEmployeeName, e.Email AS ResponsibleEmployeeEmail,
         c.StartDate, c.EndDate, c.CampaignBudget, c.CampaignStatus, c.CampaignDescription
       FROM Campaigns c
       JOIN Clients cl ON c.ClientID = cl.ClientID
@@ -144,8 +148,12 @@ const Campaign = {
     const [services] = await pool.query(servicesSql, [campaignId]);
     campaign.services = services;
 
-    // Видалено логіку для assignedEmployees
-    // campaign.assignedEmployees = []; // Можна повернути порожній масив, якщо фронтенд очікує цю властивість
+    campaign.actualCampaignCost = services.reduce((total, service) => {
+      return (
+        total +
+        parseFloat(service.BasePrice) * parseInt(service.ServiceQuantity)
+      );
+    }, 0);
 
     return campaign;
   },
@@ -162,11 +170,15 @@ const Campaign = {
       campaignDescription,
     } = data;
 
+    // Валідація існування ClientID та EmployeeID, якщо вони передані для оновлення
     if (clientId !== undefined) {
+      // clientId може бути 0, тому перевіряємо на undefined
       await this._checkClientExists(clientId);
     }
     if (responsibleEmployeeId !== undefined) {
+      // responsibleEmployeeId може бути null
       if (responsibleEmployeeId !== null) {
+        // Якщо не null, то перевіряємо існування
         await this._checkEmployeeExists(responsibleEmployeeId);
       }
     }
@@ -175,18 +187,22 @@ const Campaign = {
     if (campaignName !== undefined) fieldsToUpdate.CampaignName = campaignName;
     if (clientId !== undefined) fieldsToUpdate.ClientID = clientId;
     if (responsibleEmployeeId !== undefined)
-      fieldsToUpdate.ResponsibleEmployeeID = responsibleEmployeeId;
-    if (startDate !== undefined) fieldsToUpdate.StartDate = startDate;
-    if (endDate !== undefined) fieldsToUpdate.EndDate = endDate;
+      fieldsToUpdate.ResponsibleEmployeeID = responsibleEmployeeId; // Дозволяємо null
+    if (startDate !== undefined) fieldsToUpdate.StartDate = startDate; // Дозволяємо null
+    if (endDate !== undefined) fieldsToUpdate.EndDate = endDate; // Дозволяємо null
     if (campaignBudget !== undefined)
-      fieldsToUpdate.CampaignBudget = campaignBudget;
+      fieldsToUpdate.CampaignBudget = campaignBudget; // Дозволяємо null
     if (campaignStatus !== undefined)
       fieldsToUpdate.CampaignStatus = campaignStatus;
     if (campaignDescription !== undefined)
-      fieldsToUpdate.CampaignDescription = campaignDescription;
+      fieldsToUpdate.CampaignDescription = campaignDescription; // Дозволяємо null
 
     if (Object.keys(fieldsToUpdate).length === 0) {
-      return { changedRows: 0, message: "No fields to update provided." };
+      return {
+        affectedRows: 1,
+        changedRows: 0,
+        message: "Дані для оновлення не надано.",
+      };
     }
 
     const fieldEntries = Object.entries(fieldsToUpdate);
@@ -206,11 +222,11 @@ const Campaign = {
       if (error.code === "ER_NO_REFERENCED_ROW_2") {
         if (error.message.includes("campaigns_ibfk_1"))
           throw new Error(
-            `Update failed. Invalid ClientID. Client does not exist.`
+            `Оновлення не вдалося. Недійсний ClientID. Клієнт не існує.`
           );
         if (error.message.includes("campaigns_ibfk_2"))
           throw new Error(
-            `Update failed. Invalid ResponsibleEmployeeID. Employee does not exist or is dismissed.`
+            `Оновлення не вдалося. Недійсний ResponsibleEmployeeID. Працівник не існує або звільнений.`
           );
       }
       throw error;
@@ -218,30 +234,45 @@ const Campaign = {
   },
 
   async delete(campaignId) {
-    // Видаляємо пов'язані записи з Campaign_Services
-    const deleteServicesSql =
-      "DELETE FROM Campaign_Services WHERE CampaignID = ?";
-    await pool.query(deleteServicesSql, [campaignId]);
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
 
-    // Тепер видаляємо саму кампанію
-    const sql = "DELETE FROM Campaigns WHERE CampaignID = ?";
-    const [result] = await pool.query(sql, [campaignId]);
-    return result.affectedRows > 0;
+      // 1. Видаляємо пов'язані записи з Campaign_Services
+      const deleteServicesSql =
+        "DELETE FROM Campaign_Services WHERE CampaignID = ?";
+      await connection.query(deleteServicesSql, [campaignId]);
+
+      // 2. Тепер видаляємо саму кампанію
+      const deleteCampaignSql = "DELETE FROM Campaigns WHERE CampaignID = ?";
+      const [result] = await connection.query(deleteCampaignSql, [campaignId]);
+
+      await connection.commit();
+      return result.affectedRows > 0;
+    } catch (error) {
+      await connection.rollback();
+      console.error("Помилка під час видалення кампанії (транзакція):", error);
+      throw error;
+    } finally {
+      connection.release();
+    }
   },
 
-  // --- Методи для Campaign_Services ---
+  // Методи для Campaign_Services
   async addServiceToCampaign(campaignId, serviceId, quantity) {
+    // Перевірка існування кампанії
     const checkCampaignSql =
       "SELECT 1 FROM Campaigns WHERE CampaignID = ? LIMIT 1";
     const [campaignRows] = await pool.query(checkCampaignSql, [campaignId]);
     if (campaignRows.length === 0)
-      throw new Error(`Campaign with ID ${campaignId} not found.`);
+      throw new Error(`Кампанію з ID ${campaignId} не знайдено.`);
 
+    // Перевірка існування послуги
     const checkServiceSql =
       "SELECT 1 FROM Services WHERE ServiceID = ? LIMIT 1";
     const [serviceRows] = await pool.query(checkServiceSql, [serviceId]);
     if (serviceRows.length === 0)
-      throw new Error(`Service with ID ${serviceId} not found.`);
+      throw new Error(`Послугу з ID ${serviceId} не знайдено.`);
 
     const sql =
       "INSERT INTO Campaign_Services (CampaignID, ServiceID, ServiceQuantity) VALUES (?, ?, ?)";
@@ -250,9 +281,24 @@ const Campaign = {
       return { id: result.insertId, campaignId, serviceId, quantity };
     } catch (error) {
       if (error.code === "ER_DUP_ENTRY") {
+        // Унікальний ключ (CampaignID, ServiceID)
         throw new Error(
-          `Service with ID ${serviceId} is already added to campaign ID ${campaignId}.`
+          `Послуга з ID ${serviceId} вже додана до кампанії ID ${campaignId}.`
         );
+      }
+      if (error.code === "ER_NO_REFERENCED_ROW_2") {
+        if (error.message.includes("campaign_services_ibfk_1")) {
+          // FK на Campaigns
+          throw new Error(
+            `Кампанію з ID ${campaignId} не знайдено для додавання послуги.`
+          );
+        }
+        if (error.message.includes("campaign_services_ibfk_2")) {
+          // FK на Services
+          throw new Error(
+            `Послугу з ID ${serviceId} не знайдено для додавання до кампанії.`
+          );
+        }
       }
       throw error;
     }
@@ -262,9 +308,22 @@ const Campaign = {
     const sql =
       "UPDATE Campaign_Services SET ServiceQuantity = ? WHERE CampaignID = ? AND ServiceID = ?";
     const [result] = await pool.query(sql, [quantity, campaignId, serviceId]);
+
     if (result.affectedRows === 0) {
+      // Перевіряємо, чи існує такий запис взагалі
+      const checkExistenceSql =
+        "SELECT 1 FROM Campaign_Services WHERE CampaignID = ? AND ServiceID = ?";
+      const [existingRows] = await pool.query(checkExistenceSql, [
+        campaignId,
+        serviceId,
+      ]);
+      if (existingRows.length === 0) {
+        throw new Error(
+          `Послугу з ID ${serviceId} не знайдено в кампанії ID ${campaignId}.`
+        );
+      }
       throw new Error(
-        `Service with ID ${serviceId} not found in campaign ID ${campaignId}, or quantity was not changed.`
+        `Послугу з ID ${serviceId} не знайдено в кампанії ID ${campaignId} для оновлення.`
       );
     }
     return { campaignId, serviceId, quantity, changed: result.changedRows > 0 };
@@ -274,7 +333,7 @@ const Campaign = {
     const sql =
       "DELETE FROM Campaign_Services WHERE CampaignID = ? AND ServiceID = ?";
     const [result] = await pool.query(sql, [campaignId, serviceId]);
-    return result.affectedRows > 0;
+    return result.affectedRows > 0; // Повертає true, якщо було видалено, false - якщо ні (не знайдено)
   },
 };
 

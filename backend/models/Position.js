@@ -6,22 +6,29 @@ const Position = {
     const sql =
       "INSERT INTO Positions (PositionName, PositionDescription, BasePositionRate) VALUES (?, ?, ?)";
     try {
-      // BasePositionRate може бути NULL, тому обробляємо це
       const rate =
-        basePositionRate !== undefined &&
-        basePositionRate !== null &&
-        basePositionRate !== ""
-          ? parseFloat(basePositionRate)
-          : null;
+        basePositionRate === undefined ||
+        basePositionRate === null ||
+        String(basePositionRate).trim() === ""
+          ? null
+          : parseFloat(basePositionRate);
+
+      if (rate !== null && isNaN(rate)) {
+        // Якщо не null і не число, це помилка
+        throw new Error(
+          "Базова ставка посади (BasePositionRate) має бути числом або null."
+        );
+      }
+
       const [result] = await pool.query(sql, [
         positionName,
-        positionDescription,
+        positionDescription || null, // Дозволяємо null для опису
         rate,
       ]);
       return {
         id: result.insertId,
         positionName,
-        positionDescription,
+        positionDescription: positionDescription || null,
         basePositionRate: rate,
       };
     } catch (error) {
@@ -29,14 +36,17 @@ const Position = {
         error.code === "ER_DUP_ENTRY" &&
         error.message.includes("PositionName")
       ) {
-        throw new Error("Position with this name already exists.");
+        // Унікальний індекс на PositionName
+        throw new Error("Посада з такою назвою вже існує.");
       }
+      console.error("Помилка при створенні посади в моделі:", error);
       throw error;
     }
   },
 
   async getAll(searchTerm = "") {
-    let sql = "SELECT * FROM Positions";
+    let sql =
+      "SELECT PositionID, PositionName, PositionDescription, BasePositionRate FROM Positions"; // Явно вказуємо поля
     const params = [];
     if (searchTerm) {
       sql += " WHERE PositionName LIKE ? OR PositionDescription LIKE ?";
@@ -48,9 +58,10 @@ const Position = {
   },
 
   async findById(positionId) {
-    const sql = "SELECT * FROM Positions WHERE PositionID = ?";
+    const sql =
+      "SELECT PositionID, PositionName, PositionDescription, BasePositionRate FROM Positions WHERE PositionID = ?";
     const [rows] = await pool.query(sql, [positionId]);
-    return rows[0];
+    return rows.length > 0 ? rows[0] : null; // Повертаємо null, якщо не знайдено
   },
 
   async update(
@@ -60,17 +71,27 @@ const Position = {
     const fieldsToUpdate = {};
     if (positionName !== undefined) fieldsToUpdate.PositionName = positionName;
     if (positionDescription !== undefined)
-      fieldsToUpdate.PositionDescription = positionDescription;
-    // Дозволяємо встановлювати NULL для BasePositionRate
+      fieldsToUpdate.PositionDescription = positionDescription; // Дозволяємо null
+
     if (basePositionRate !== undefined) {
-      fieldsToUpdate.BasePositionRate =
-        basePositionRate !== null && basePositionRate !== ""
-          ? parseFloat(basePositionRate)
-          : null;
+      const rate =
+        basePositionRate === null || String(basePositionRate).trim() === ""
+          ? null
+          : parseFloat(basePositionRate);
+      if (rate !== null && isNaN(rate)) {
+        throw new Error(
+          "Базова ставка посади (BasePositionRate) має бути числом або null."
+        );
+      }
+      fieldsToUpdate.BasePositionRate = rate;
     }
 
     if (Object.keys(fieldsToUpdate).length === 0) {
-      return { changedRows: 0, message: "No fields to update provided." };
+      return {
+        affectedRows: 1,
+        changedRows: 0,
+        message: "Дані для оновлення не надано.",
+      };
     }
 
     const fieldEntries = Object.entries(fieldsToUpdate);
@@ -91,26 +112,27 @@ const Position = {
         error.code === "ER_DUP_ENTRY" &&
         error.message.includes("PositionName")
       ) {
-        throw new Error("Another position with this name already exists.");
+        throw new Error("Інша посада з такою назвою вже існує.");
       }
+      console.error("Помилка при оновленні посади в моделі:", error);
       throw error;
     }
   },
 
   async delete(positionId) {
-    // Перевірка, чи посада використовується працівниками
-    const checkEmployeesSql =
-      "SELECT 1 FROM Employees WHERE PositionID = ? LIMIT 1";
-    const [employeeRows] = await pool.query(checkEmployeesSql, [positionId]);
-    if (employeeRows.length > 0) {
-      throw new Error(
-        "Cannot delete position. It is currently assigned to one or more employees. Please reassign or remove employees from this position first."
-      );
-    }
-
     const sql = "DELETE FROM Positions WHERE PositionID = ?";
-    const [result] = await pool.query(sql, [positionId]);
-    return result.affectedRows > 0;
+    try {
+      const [result] = await pool.query(sql, [positionId]);
+      return result.affectedRows > 0; // Повертає true, якщо було видалено, false - якщо ні
+    } catch (error) {
+      if (error.code === "ER_ROW_IS_REFERENCED_2") {
+        throw new Error(
+          "Неможливо видалити посаду, оскільки вона призначена працівникам. Спочатку змініть або видаліть посаду у відповідних працівників."
+        );
+      }
+      console.error("Помилка при видаленні посади в моделі:", error);
+      throw error;
+    }
   },
 };
 

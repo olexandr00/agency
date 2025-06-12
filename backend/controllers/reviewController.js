@@ -1,21 +1,23 @@
 // backend/controllers/reviewController.js
 const Review = require("../models/Review");
-const Service = require("../models/Service"); // Якщо потрібно для інших методів
+const Service = require("../models/Service");
 
 const reviewController = {
   createReview: async (req, res, next) => {
     try {
-      // Важливо: Перевірка, чи користувач автентифікований для створення відгуку
+      // Перевірка, чи користувач автентифікований для створення відгуку
       if (!req.user || !req.user.userId) {
         return res
           .status(401)
-          .json({ message: "Authentication required to create a review." });
+          .json({ message: "Для створення відгуку потрібна автентифікація." });
       }
       const userId = req.user.userId;
       const { serviceId, reviewText, rating } = req.body;
 
       if (!reviewText) {
-        return res.status(400).json({ message: "Review text is required." });
+        return res
+          .status(400)
+          .json({ message: "Текст відгуку є обов'язковим." });
       }
       if (
         rating !== undefined &&
@@ -26,15 +28,14 @@ const reviewController = {
       ) {
         return res
           .status(400)
-          .json({ message: "Rating must be an integer between 1 and 5." });
+          .json({ message: "Рейтинг має бути цілим числом від 1 до 5." });
       }
       if (serviceId) {
-        // Опціонально: перевірка існування сервісу, якщо модель не робить цього
         const service = await Service.findById(serviceId);
         if (!service) {
           return res
             .status(400)
-            .json({ message: `Service with ID ${serviceId} not found.` });
+            .json({ message: `Послугу з ID ${serviceId} не знайдено.` });
         }
       }
 
@@ -53,13 +54,29 @@ const reviewController = {
       });
       res.status(201).json({
         message:
-          "Review submitted successfully. It will be reviewed by an administrator.",
+          "Відгук успішно надіслано. Він буде розглянутий адміністратором.",
         review: newReview,
       });
     } catch (error) {
-      if (error.message.includes("not found")) {
-        // Помилка від моделі, якщо User/Service не знайдено
-        return res.status(400).json({ message: error.message });
+      // Якщо модель кидає помилку "not found" (наприклад, UserID не знайдено при створенні)
+      if (error.message && typeof error.message === "string") {
+        if (error.message.toLowerCase().includes("not found")) {
+          // Це може бути помилка, що UserID або ServiceID (якщо перевіряється в моделі Review.create) не знайдено
+          // Перекладаємо загальну помилку, оскільки точна причина "not found" залежить від реалізації моделі
+          return res
+            .status(400)
+            .json({
+              message:
+                "Помилка створення відгуку: зазначеного користувача або послугу не знайдено.",
+            });
+        }
+        if (error.message.toLowerCase().includes("validation failed")) {
+          return res
+            .status(400)
+            .json({
+              message: "Помилка валідації даних при створенні відгуку.",
+            });
+        }
       }
       next(error);
     }
@@ -67,19 +84,15 @@ const reviewController = {
 
   getAllReviews: async (req, res, next) => {
     try {
-      // isAdmin тепер коректно визначиться: true, якщо req.user є і role='admin', інакше false
       const isAdmin = !!(req.user && req.user.role === "admin");
       const { search, serviceId, userId, approved } = req.query;
 
-      let approvedFilterForModel = null; // null означає "не застосовувати явний фільтр"
+      let approvedFilterForModel = null;
 
-      // Якщо параметр 'approved' передано (наприклад, з адмінки 'approved=1' або 'approved=0')
       if (approved !== undefined && approved !== "") {
         approvedFilterForModel =
           approved === "1" || String(approved).toLowerCase() === "true";
       }
-      // Якщо 'approved' не передано, approvedFilterForModel залишається null.
-      // Модель Review.getAll сама вирішить, що робити (показати тільки схвалені для не-адмінів, або всі для адмінів)
 
       const reviews = await Review.getAll({
         isAdmin,
@@ -91,23 +104,18 @@ const reviewController = {
       });
       res.status(200).json(reviews);
     } catch (error) {
-      console.error("[API /reviews CONTROLLER] Error in getAllReviews:", error);
+      console.error("[API /reviews КОНТРОЛЕР] Помилка в getAllReviews:", error);
       next(error);
     }
   },
 
-  // ... решта методів контролера (getReviewById, updateReview, approveReview, deleteReview, getServiceReviews) ...
-  // Вони не потребують змін, якщо їхня логіка вже правильна щодо використання isAuthenticated та isAdmin.
-
   getReviewById: async (req, res, next) => {
     try {
       const { id } = req.params;
-      // Поточна модель findById не фільтрує за IsApproved, тому доступ до цього ендпоінту краще залишити адмінам,
-      // як це налаштовано у reviewRoutes.js (isAuthenticated, isAdmin).
-      // Якщо потрібно зробити його публічним, модель findById має враховувати isAdmin.
+
       const review = await Review.findById(id);
       if (!review) {
-        return res.status(404).json({ message: "Review not found." });
+        return res.status(404).json({ message: "Відгук не знайдено." });
       }
       res.status(200).json(review);
     } catch (error) {
@@ -120,11 +128,23 @@ const reviewController = {
       const { id } = req.params;
       const { reviewText, rating, isApproved } = req.body;
 
-      // Перевірка, чи відгук існує (опціонально, модель може це робити)
       const reviewToUpdate = await Review.findById(id);
       if (!reviewToUpdate) {
-        return res.status(404).json({ message: "Review not found." });
+        return res
+          .status(404)
+          .json({ message: "Відгук для оновлення не знайдено." });
       }
+
+      // Перевірка прав: тільки адмін або автор відгуку може редагувати (якщо isApproved не змінюється)
+      // Або тільки адмін може змінювати isApproved
+      // Для простоти, припускаємо, що middleware авторизації вже виконав перевірку ролі для цього ендпоінту
+      // Якщо потрібно більш гранулярний контроль:
+      // if (req.user.role !== 'admin' && reviewToUpdate.UserID !== req.user.userId) {
+      //     return res.status(403).json({ message: "У вас недостатньо прав для редагування цього відгуку." });
+      // }
+      // if (isApproved !== undefined && req.user.role !== 'admin') {
+      //     return res.status(403).json({ message: "Тільки адміністратор може змінювати статус схвалення відгуку." });
+      // }
 
       const updateData = {};
       if (reviewText !== undefined) updateData.reviewText = reviewText;
@@ -136,42 +156,54 @@ const reviewController = {
             parseInt(rating) > 5)
         ) {
           return res.status(400).json({
-            message: "Rating must be an integer between 1 and 5, or null.",
+            message:
+              "Рейтинг має бути цілим числом від 1 до 5, або null (для скидання).",
           });
         }
         updateData.rating = rating !== null ? parseInt(rating) : null;
       }
-      // isApproved обробляється тільки якщо передано
-      if (isApproved !== undefined) {
+
+      // Тільки адмін може змінювати isApproved через цей загальний метод оновлення
+      // Для зміни isApproved краще використовувати окремий метод approveReview
+      if (isApproved !== undefined && req.user && req.user.role === "admin") {
         updateData.isApproved = !!isApproved; // Конвертуємо в boolean
+      } else if (
+        isApproved !== undefined &&
+        req.user &&
+        req.user.role !== "admin"
+      ) {
+        return res
+          .status(403)
+          .json({
+            message: "Тільки адміністратор може змінювати статус схвалення.",
+          });
       }
 
       if (Object.keys(updateData).length === 0) {
         return res
           .status(400)
-          .json({ message: "No data provided for update." });
+          .json({ message: "Не надано даних для оновлення." });
       }
 
-      const result = await Review.update(id, updateData); // Модель має конвертувати boolean isApproved в 0/1
+      const result = await Review.update(id, updateData);
 
-      // Перевірка результату оновлення
       if (result.changedRows === 0 && result.affectedRows > 0) {
-        // Рядок знайдено, але дані не змінилися (надіслали ті ж самі значення)
         return res.status(200).json({
-          message: "Review data was not changed.",
-          review: await Review.findById(id), // Повертаємо поточний стан
+          message:
+            "Дані відгуку не було змінено (нові значення співпадають зі старими).",
+          review: await Review.findById(id),
         });
       }
       if (result.affectedRows === 0) {
-        // Рядок не знайдено (малоймовірно, якщо перевірка reviewToUpdate була)
+        // Малоймовірно, якщо findById вище спрацював
         return res
           .status(404)
-          .json({ message: "Review not found or update failed." });
+          .json({ message: "Відгук не знайдено або оновлення не вдалося." });
       }
 
       const updatedReview = await Review.findById(id);
       res.status(200).json({
-        message: "Review updated successfully",
+        message: "Відгук успішно оновлено",
         review: updatedReview,
       });
     } catch (error) {
@@ -180,32 +212,35 @@ const reviewController = {
   },
 
   approveReview: async (req, res, next) => {
+    // Цей метод призначений для адмінів
     try {
       const { id } = req.params;
-      const { approve } = req.body; // Очікуємо { "approve": true } або { "approve": false }
+      const { approve } = req.body; // очікуємо true або false
 
-      if (approve === undefined) {
+      if (typeof approve !== "boolean") {
         return res.status(400).json({
-          message: "Approval status (approve: true/false) is required.",
+          message:
+            "Статус схвалення (approve: true/false) є обов'язковим і має бути булевим значенням.",
         });
       }
 
-      const review = await Review.findById(id); // Перевірка існування
+      const review = await Review.findById(id);
       if (!review) {
-        return res.status(404).json({ message: "Review not found." });
+        return res.status(404).json({ message: "Відгук не знайдено." });
       }
 
-      const success = await Review.approve(id, !!approve); // Передаємо boolean
+      const success = await Review.approve(id, approve); // Модель приймає boolean
       if (!success) {
-        // Модель повернула false (affectedRows === 0)
+        // Модель могла повернути false, якщо статус вже був таким самим, або ID не знайдено
         return res.status(500).json({
+          // Або 400/404 залежно від логіки моделі
           message:
-            "Failed to update review approval status. Review may not exist or status was already the same.",
+            "Не вдалося оновити статус схвалення відгуку. Можливо, відгук не існує або статус вже був таким самим.",
         });
       }
       const updatedReview = await Review.findById(id);
       res.status(200).json({
-        message: `Review ${approve ? "approved" : "unapproved"} successfully.`,
+        message: `Відгук успішно ${approve ? "схвалено" : "відхилено"}.`,
         review: updatedReview,
       });
     } catch (error) {
@@ -216,37 +251,46 @@ const reviewController = {
   deleteReview: async (req, res, next) => {
     try {
       const { id } = req.params;
-      const reviewToDelete = await Review.findById(id); // Перевірка існування
+      const reviewToDelete = await Review.findById(id);
 
       if (!reviewToDelete) {
-        return res.status(404).json({ message: "Review not found." });
+        return res
+          .status(404)
+          .json({ message: "Відгук для видалення не знайдено." });
       }
+
+      // Перевірка прав: тільки адмін або автор відгуку може видаляти
+      // if (req.user.role !== 'admin' && reviewToDelete.UserID !== req.user.userId) {
+      //     return res.status(403).json({ message: "У вас недостатньо прав для видалення цього відгуку." });
+      // }
 
       const success = await Review.delete(id);
       if (!success) {
-        // Модель повернула false (affectedRows === 0)
+        // Модель повертає true/false
         return res.status(404).json({
-          message: "Review could not be deleted or was already deleted.",
+          // Або 500, якщо це несподівана помилка
+          message: "Відгук не вдалося видалити або його вже було видалено.",
         });
       }
-      res.status(200).json({ message: "Review deleted successfully" });
+      res.status(200).json({ message: "Відгук успішно видалено" });
     } catch (error) {
       next(error);
     }
   },
 
   getServiceReviews: async (req, res, next) => {
+    // Для публічного відображення відгуків по конкретній послузі (тільки схвалені)
     try {
       const { serviceId } = req.params;
-      // Перевірка існування сервісу (опціонально, якщо модель не робить)
+
       const service = await Service.findById(serviceId);
       if (!service) {
         return res
           .status(404)
-          .json({ message: `Service with ID ${serviceId} not found.` });
+          .json({ message: `Послугу з ID ${serviceId} не знайдено.` });
       }
-      // Модель getByServiceId сама має фільтрувати за IsApproved = 1 для публічного перегляду
-      const reviews = await Review.getByServiceId(serviceId); // isAdmin за замовчуванням false
+      // Модель Review.getByServiceId повинна повертати тільки схвалені відгуки
+      const reviews = await Review.getByServiceId(serviceId);
       res.status(200).json(reviews);
     } catch (error) {
       next(error);

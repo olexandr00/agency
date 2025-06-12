@@ -21,7 +21,7 @@ router.get("/:id", siteOrderController.getSiteOrderById);
 // Адмін оновлює статус замовлення
 // Параметр :id тепер може бути як OrderID, так і PublicOrderID
 router.patch("/:id/status", isAdmin, siteOrderController.updateSiteOrderStatus);
-// Адмін видаляє замовлення (обережно!)
+// Адмін видаляє замовлення
 // Параметр :id тепер може бути як OrderID, так і PublicOrderID
 router.delete("/:id", isAdmin, siteOrderController.deleteSiteOrder);
 

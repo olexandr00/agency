@@ -14,8 +14,6 @@ async function checkDbConnection() {
     connection.release();
   } catch (error) {
     console.error("Error connecting to the database:", error.message);
-    // Можна зупинити сервер, якщо БД недоступна
-    // process.exit(1);
   }
 }
 

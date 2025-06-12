@@ -37,11 +37,6 @@ const Auth = {
     this.updateAuthUI();
     if (window.location.pathname.includes("/admin/")) {
       window.location.href = "../index.html";
-    } else if (
-      window.location.pathname !== "/" &&
-      !window.location.pathname.endsWith("/index.html")
-    ) {
-      // window.location.href = 'index.html';
     }
   },
 
@@ -136,9 +131,6 @@ const Auth = {
     if (!/[0-9]/.test(password)) {
       errors.push("Мінімум одну цифру (0-9).");
     }
-    // if (!/[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]+/.test(password)) { // Опціонально
-    //     errors.push("Мінімум один спеціальний символ.");
-    // }
     return errors;
   },
 
@@ -148,7 +140,6 @@ const Auth = {
     const passwordInput = document.getElementById("password");
 
     if (!registerForm || !messageElement || !passwordInput) {
-      // console.warn("Register form elements not found. Skipping initRegisterForm.");
       return;
     }
 
@@ -163,7 +154,6 @@ const Auth = {
                 </ul>
             </div>
         `;
-    // Вставляємо підказку тільки якщо її ще немає
     if (!document.getElementById("password-requirements")) {
       passwordInput.insertAdjacentHTML("afterend", passwordRequirementsHTML);
     }
@@ -256,11 +246,9 @@ const Auth = {
   },
 
   protectAdminRoutes: function () {
-    /* ... (код без змін з попередньої версії) ... */ if (
-      window.location.pathname.includes("/admin/")
-    ) {
+    if (window.location.pathname.includes("/admin/")) {
       if (!this.isLoggedIn()) {
-        alert("Будь ласка, увійдіть в систему для доступу до адмін-панелі.");
+        // alert("Будь ласка, увійдіть в систему для доступу до адмін-панелі.");
         window.location.href =
           "../login.html?redirect=" +
           encodeURIComponent(window.location.pathname + window.location.search);
@@ -268,7 +256,7 @@ const Auth = {
       }
       const user = this.getUser();
       if (!user || user.role !== "admin") {
-        alert("Доступ заборонено. Потрібні права адміністратора.");
+        //alert("Доступ заборонено. Потрібні права адміністратора.");
         window.location.href = "../index.html";
         return false;
       }

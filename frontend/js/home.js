@@ -1,8 +1,8 @@
 // frontend/js/home.js
 document.addEventListener("DOMContentLoaded", () => {
-  console.log("[home.js] DOMContentLoaded event fired.");
+  console.log("[home.js] Подія DOMContentLoaded спрацювала.");
 
-  const API_URL = "http://localhost:3000/api"; // Переконайтеся, що це правильний URL вашого API
+  const API_URL = "http://localhost:3000/api";
 
   const popularServicesListContainer = document.getElementById(
     "popular-services-list"
@@ -10,16 +10,19 @@ document.addEventListener("DOMContentLoaded", () => {
   const testimonialsListContainer =
     document.getElementById("testimonials-list");
 
-  // --- Анімація при прокрутці (якщо ви її використовуєте) ---
   const animatedElements = document.querySelectorAll(".animate-on-scroll");
   if (animatedElements.length > 0) {
-    // console.log('[home.js] Found elements to animate on scroll:', animatedElements.length);
+    // Якщо такі елементи є
+    // Створюємо IntersectionObserver
     const observer = new IntersectionObserver(
       (entries, observerInstance) => {
+        // Колбек-функція, яка викликається, коли видимість елементів змінюється
         entries.forEach((entry) => {
+          // Проходимо по всіх елементах, за якими спостерігаємо
           if (entry.isIntersecting) {
-            entry.target.classList.add("is-visible");
-            observerInstance.unobserve(entry.target);
+            // Якщо елемент зараз видимий на екрані
+            entry.target.classList.add("is-visible"); // Додаємо клас для запуску CSS-анімації
+            observerInstance.unobserve(entry.target); // Припиняємо спостереження за цим елементом (анімація має спрацювати один раз)
           }
         });
       },
@@ -28,19 +31,17 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     );
     animatedElements.forEach((el) => observer.observe(el));
-  } else {
-    // console.log('[home.js] No elements found with .animate-on-scroll class.');
   }
 
   // --- Завантаження популярних послуг ---
   async function fetchPopularServices() {
     if (!popularServicesListContainer) {
       console.error(
-        '[home.js] ERROR: Element with ID "popular-services-list" not found!'
+        '[home.js] ПОМИЛКА: Елемент з ID "popular-services-list" не знайдено!'
       );
       return;
     }
-    console.log("[home.js] fetchPopularServices - START");
+    console.log("[home.js] fetchPopularServices - ПОЧАТОК");
 
     const loader = popularServicesListContainer.querySelector(".loader-text");
     if (loader) {
@@ -52,25 +53,25 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // Спробуємо завантажити до 3 послуг. Бекенд має підтримувати ?limit=3 або повернути всі, а ми обріжемо.
+      // Спробуємо завантажити до 3 послуг. Бекенд має підтримувати ?limit=3
       const response = await fetch(`${API_URL}/services`); // Спочатку завантажуємо всі
       console.log(
-        "[home.js] fetchPopularServices - API Response Status:",
+        "[home.js] fetchPopularServices - Статус відповіді API:",
         response.status
       );
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: `HTTP error! status: ${response.status}` }));
+        const errorData = await response.json().catch(() => ({
+          message: `HTTP помилка! Статус: ${response.status}`,
+        }));
         throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
+          errorData.message || `HTTP помилка! Статус: ${response.status}`
         );
       }
 
       let services = await response.json();
       console.log(
-        "[home.js] fetchPopularServices - All services received:",
+        "[home.js] fetchPopularServices - Отримано всі послуги:",
         services.length
       );
 
@@ -78,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (services.length > 3) {
         services = services.slice(0, 3);
         console.log(
-          "[home.js] fetchPopularServices - Sliced to 3 services:",
+          "[home.js] fetchPopularServices - Обрізано до 3 послуг:",
           services.length
         );
       }
@@ -93,7 +94,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (services.length === 0) {
         console.log(
-          "[home.js] fetchPopularServices - No popular services to display."
+          "[home.js] fetchPopularServices - Немає популярних послуг для відображення."
         );
         popularServicesListContainer.innerHTML =
           '<p class="info-text" style="text-align:center;">Популярних послуг наразі немає.</p>';
@@ -101,7 +102,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       services.forEach((service, index) => {
-        // console.log(`[home.js] fetchPopularServices - Rendering service index ${index}:`, service.ServiceName);
         const serviceCard = document.createElement("div");
         serviceCard.className = "service-card card";
 
@@ -138,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           } else {
             console.error(
-              "[home.js] Cart object or Cart.addItem method is not available."
+              "[home.js] Об'єкт Cart або метод Cart.addItem недоступний."
             );
             alert("Помилка: Функціонал кошика недоступний.");
           }
@@ -151,10 +151,10 @@ document.addEventListener("DOMContentLoaded", () => {
         popularServicesListContainer.appendChild(serviceCard);
       });
       console.log(
-        "[home.js] fetchPopularServices - FINISHED rendering popular services."
+        "[home.js] fetchPopularServices - ЗАВЕРШЕНО відображення популярних послуг."
       );
     } catch (error) {
-      console.error("[home.js] fetchPopularServices - Error:", error);
+      console.error("[home.js] fetchPopularServices - Помилка:", error);
       const currentLoader =
         document.getElementById("temp-service-loader") ||
         popularServicesListContainer.querySelector(".loader-text");
@@ -167,11 +167,11 @@ document.addEventListener("DOMContentLoaded", () => {
   async function fetchTestimonials() {
     if (!testimonialsListContainer) {
       console.error(
-        '[home.js] ERROR: Element with ID "testimonials-list" not found!'
+        '[home.js] ПОМИЛКА: Елемент з ID "testimonials-list" не знайдено!'
       );
       return;
     }
-    console.log("[home.js] fetchTestimonials - START");
+    console.log("[home.js] fetchTestimonials - ПОЧАТОК");
 
     const loader = testimonialsListContainer.querySelector(".loader-text");
     if (loader) {
@@ -183,33 +183,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     try {
       const response = await fetch(`${API_URL}/reviews`);
-      console.log(
-        "[home.js] fetchTestimonials - API Response Status:",
-        response.status
-      );
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: `HTTP error! status: ${response.status}` }));
+        const errorData = await response.json().catch(() => ({
+          message: `HTTP помилка! Статус: ${response.status}`,
+        }));
         throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
+          errorData.message || `HTTP помилка! Статус: ${response.status}`
         );
       }
       let reviews = await response.json();
-      console.log(
-        "[home.js] fetchTestimonials - All reviews received:",
-        reviews.length
-      );
 
       // Фільтруємо тільки схвалені (IsApproved = 1 або true) та беремо перші 3
       const approvedReviews = reviews
         .filter((review) => review.IsApproved)
         .slice(0, 3);
-      console.log(
-        "[home.js] fetchTestimonials - Approved and sliced reviews:",
-        approvedReviews.length
-      );
 
       const currentLoader =
         document.getElementById("temp-review-loader") ||
@@ -219,16 +207,12 @@ document.addEventListener("DOMContentLoaded", () => {
       testimonialsListContainer.innerHTML = "";
 
       if (approvedReviews.length === 0) {
-        console.log(
-          "[home.js] fetchTestimonials - No approved testimonials to display."
-        );
         testimonialsListContainer.innerHTML =
           '<p class="info-text" style="text-align:center;">Наразі немає відгуків.</p>';
         return;
       }
 
       approvedReviews.forEach((review, index) => {
-        // console.log(`[home.js] fetchTestimonials - Rendering review index ${index}:`, review.UserName);
         const testimonialCard = document.createElement("div");
         testimonialCard.className = "testimonial-card card";
 
@@ -247,11 +231,8 @@ document.addEventListener("DOMContentLoaded", () => {
         testimonialCard.appendChild(reviewAuthor);
         testimonialsListContainer.appendChild(testimonialCard);
       });
-      console.log(
-        "[home.js] fetchTestimonials - FINISHED rendering testimonials."
-      );
     } catch (error) {
-      console.error("[home.js] fetchTestimonials - Error:", error);
+      console.error("[home.js] fetchTestimonials - Помилка:", error);
       const currentLoader =
         document.getElementById("temp-review-loader") ||
         testimonialsListContainer.querySelector(".loader-text");
@@ -260,19 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Перевірка, чи ми на головній сторінці, перш ніж викликати функції
-  // (хоча, якщо цей скрипт підключається тільки на index.html, ця перевірка не обов'язкова,
-  // але не завадить, якщо структура проекту зміниться)
   if (
     document.getElementById("popular-services-list") &&
     document.getElementById("testimonials-list")
   ) {
-    console.log("[home.js] Initializing data fetch for home page.");
     fetchPopularServices();
     fetchTestimonials();
-  } else {
-    console.log(
-      "[home.js] Not on home page or required elements are missing. Skipping data fetch."
-    );
   }
 });

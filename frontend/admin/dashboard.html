@@ -5,11 +5,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Адмін-панель - Дашборд</title>
     <link href="../css/custom.css" rel="stylesheet" />
-    <!-- Зверніть увагу на шлях ../css/ -->
     <link href="../css/custom.css" rel="stylesheet" />
     <link href="../css/admin-common.css" rel="stylesheet" />
-    <!-- Спільні стилі для адмінки -->
     <link href="../css/admin-crud.css" rel="stylesheet" />
+    <script>
+      (function () {
+        const token = localStorage.getItem("authToken");
+        const userString = localStorage.getItem("authUser");
+        let user = null;
+        if (userString) {
+          try {
+            user = JSON.parse(userString);
+          } catch (e) {
+            console.error("Corrupted authUser in localStorage", e);
+            localStorage.removeItem("authToken");
+            localStorage.removeItem("authUser");
+          }
+        }
+
+        const isAdminPage = window.location.pathname.includes("/admin/");
+
+        if (isAdminPage) {
+          if (!token || !user) {
+            window.location.href =
+              "../login.html?redirect=" +
+              encodeURIComponent(
+                window.location.pathname + window.location.search
+              );
+          } else if (user.role !== "admin") {
+            window.location.href = "../index.html";
+          }
+        }
+      })();
+    </script>
   </head>
   <body class="admin-page-body">
     <aside class="admin-sidebar">
@@ -41,10 +69,7 @@
           <h2>Адмін-панель</h2>
           <!-- Буде змінюватися залежно від сторінки -->
         </div>
-        <div class="user-info" id="admin-user-info">
-          <!-- <span>Вітаємо, admin!</span>
-                <button class="button button-secondary logout-button">Вихід</button> -->
-        </div>
+        <div class="user-info" id="admin-user-info"></div>
       </header>
 
       <section class="content-area">

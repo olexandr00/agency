@@ -3,58 +3,65 @@ const pool = require("../config/db");
 
 const Review = {
   async create({ userId, serviceId, reviewText, rating, isApproved = 0 }) {
-    try {
-      const [userRows] = await pool.query(
-        "SELECT 1 FROM Users WHERE UserID = ?",
-        [userId]
+    // Перевірка існування користувача
+    const [userRows] = await pool.query(
+      "SELECT 1 FROM Users WHERE UserID = ?",
+      [userId]
+    );
+    if (userRows.length === 0) {
+      throw new Error(`Користувача з ID ${userId} не знайдено.`);
+    }
+
+    // Перевірка існування послуги, якщо serviceId передано
+    if (serviceId !== null && serviceId !== undefined) {
+      const [serviceRows] = await pool.query(
+        "SELECT 1 FROM Services WHERE ServiceID = ?",
+        [serviceId]
       );
-      if (userRows.length === 0) {
-        throw new Error(`User with ID ${userId} not found.`);
+      if (serviceRows.length === 0) {
+        throw new Error(`Послугу з ID ${serviceId} не знайдено.`);
       }
+    } else {
+      serviceId = null; // Явно встановлюємо null, якщо не передано
+    }
 
-      if (serviceId !== null && serviceId !== undefined) {
-        const [serviceRows] = await pool.query(
-          "SELECT 1 FROM Services WHERE ServiceID = ?",
-          [serviceId]
-        );
-        if (serviceRows.length === 0) {
-          throw new Error(`Service with ID ${serviceId} not found.`);
-        }
-      } else {
-        serviceId = null; // Явно встановлюємо null, якщо не передано
-      }
+    const sql = `INSERT INTO Reviews (UserID, ServiceID, ReviewText, Rating, IsApproved, ReviewDate) 
+                 VALUES (?, ?, ?, ?, ?, NOW())`;
 
-      const sql = `INSERT INTO Reviews (UserID, ServiceID, ReviewText, Rating, IsApproved) 
-                   VALUES (?, ?, ?, ?, ?)`;
-
+    try {
       const [result] = await pool.query(sql, [
         userId,
         serviceId,
         reviewText,
         // Переконуємося, що рейтинг є числом або null
-        rating !== undefined && rating !== null ? parseInt(rating) : null,
+        rating !== undefined && rating !== null && String(rating).trim() !== ""
+          ? parseInt(rating)
+          : null,
         isApproved ? 1 : 0, // Конвертуємо boolean в 0/1
       ]);
       // Повертаємо створений об'єкт з ID
       return this.findById(result.insertId);
     } catch (error) {
-      // Обробка помилок зовнішніх ключів
+      // Обробка помилок зовнішніх ключів (якщо попередні перевірки не спрацювали)
       if (error.code === "ER_NO_REFERENCED_ROW_2") {
         if (
           error.message.includes("FK_Review_User") ||
-          error.message.includes("UserID")
-        )
-          // Адаптуйте під назву вашого constraint
-          throw new Error(`User with ID ${userId} not found (FK constraint).`);
+          error.message.toLowerCase().includes("userid")
+        ) {
+          throw new Error(
+            `Користувача з ID ${userId} не знайдено (помилка зовнішнього ключа).`
+          );
+        }
         if (
           error.message.includes("FK_Review_Service") ||
-          error.message.includes("ServiceID")
-        )
-          // Адаптуйте
+          error.message.toLowerCase().includes("serviceid")
+        ) {
           throw new Error(
-            `Service with ID ${serviceId} not found (FK constraint).`
+            `Послугу з ID ${serviceId} не знайдено (помилка зовнішнього ключа).`
           );
+        }
       }
+      console.error("Помилка при створенні відгуку в моделі:", error);
       throw error; // Перекидаємо інші помилки
     }
   },
@@ -64,16 +71,8 @@ const Review = {
     searchTerm = "",
     serviceIdFilter = null,
     userIdFilter = null,
-    approvedFilter = null,
+    approvedFilter = null, // boolean: true (схвалені), false (не схвалені), null (залежить від isAdmin)
   } = {}) {
-    console.log("[Review.getAll MODEL] Called with params:", {
-      isAdmin,
-      searchTerm,
-      serviceIdFilter,
-      userIdFilter,
-      approvedFilter,
-    });
-
     let sql = `
       SELECT 
         r.ReviewID, r.UserID, u.Username AS UserName, u.Email AS UserEmail,
@@ -89,43 +88,25 @@ const Review = {
 
     // Логіка фільтрації за статусом схвалення
     if (approvedFilter !== null && approvedFilter !== undefined) {
-      // Якщо фільтр явно передано (true або false, з адмінки)
-      console.log(
-        "[Review.getAll MODEL] Applying EXPLICIT approvedFilter:",
-        approvedFilter
-      );
       whereClauses.push("r.IsApproved = ?");
       params.push(approvedFilter ? 1 : 0); // true -> 1, false -> 0
     } else {
-      // Якщо approvedFilter НЕ передано (null/undefined)
-      console.log(
-        "[Review.getAll MODEL] approvedFilter is null/undefined. Checking isAdmin for default filtering."
-      );
       if (!isAdmin) {
-        // Для публічного перегляду (не адмін) показуємо тільки схвалені
-        console.log(
-          "[Review.getAll MODEL] Not admin OR public access without explicit filter: SHOWING ONLY IsApproved = 1"
-        );
         whereClauses.push("r.IsApproved = 1");
-      } else {
-        // Для адміна, якщо approvedFilter не передано, значить "Всі статуси" - не додаємо умову по IsApproved
-        console.log(
-          "[Review.getAll MODEL] Is admin AND approvedFilter is null/undefined: Showing ALL statuses (no IsApproved clause added)."
-        );
       }
     }
 
     if (searchTerm) {
       whereClauses.push(
-        `(r.ReviewText LIKE ? OR u.Username LIKE ? OR s.ServiceName LIKE ?)`
+        `(r.ReviewText LIKE ? OR u.Username LIKE ? OR u.Email LIKE ? OR s.ServiceName LIKE ?)` // Додано пошук по email користувача
       );
       const term = `%${searchTerm}%`;
-      params.push(term, term, term);
+      params.push(term, term, term, term);
     }
     if (
       serviceIdFilter !== null &&
       serviceIdFilter !== undefined &&
-      serviceIdFilter !== ""
+      String(serviceIdFilter).trim() !== ""
     ) {
       whereClauses.push("r.ServiceID = ?");
       params.push(parseInt(serviceIdFilter));
@@ -133,7 +114,7 @@ const Review = {
     if (
       userIdFilter !== null &&
       userIdFilter !== undefined &&
-      userIdFilter !== "" &&
+      String(userIdFilter).trim() !== "" &&
       isAdmin
     ) {
       whereClauses.push("r.UserID = ?");
@@ -146,14 +127,15 @@ const Review = {
 
     sql += " ORDER BY r.ReviewDate DESC";
 
-    console.log("[Review.getAll MODEL] FINAL SQL:", sql);
-    console.log("[Review.getAll MODEL] FINAL PARAMS:", JSON.stringify(params));
-
     try {
       const [rows] = await pool.query(sql, params);
-      return rows;
+      // Конвертуємо IsApproved з 0/1 в true/false
+      return rows.map((review) => ({
+        ...review,
+        IsApproved: !!review.IsApproved,
+      }));
     } catch (dbError) {
-      console.error("[Review.getAll MODEL] DATABASE ERROR:", dbError);
+      console.error("[Review.getAll MODEL] Помилка бази даних:", dbError);
       throw dbError;
     }
   },
@@ -169,27 +151,38 @@ const Review = {
       LEFT JOIN Services s ON r.ServiceID = s.ServiceID
       WHERE r.ReviewID = ?
     `;
-    // Для публічного перегляду окремого відгуку, можливо, теж потрібна перевірка IsApproved
-    // Або доступ до цього методу має бути тільки для адмінів, як зараз у роутах.
     const [rows] = await pool.query(sql, [reviewId]);
-    return rows[0];
+    if (rows.length > 0) {
+      const review = rows[0];
+      return {
+        ...review,
+        IsApproved: !!review.IsApproved, // Конвертуємо 0/1 в true/false
+      };
+    }
+    return null; // Повертаємо null, якщо не знайдено
   },
 
   async update(reviewId, data) {
-    const { reviewText, rating, isApproved } = data;
+    const { reviewText, rating, isApproved } = data; // isApproved очікується як boolean
     const fieldsToUpdate = {};
 
     if (reviewText !== undefined) fieldsToUpdate.ReviewText = reviewText;
-    if (rating !== undefined)
-      fieldsToUpdate.Rating = rating !== null ? parseInt(rating) : null;
-    if (isApproved !== undefined)
-      fieldsToUpdate.IsApproved = isApproved ? 1 : 0; // boolean -> 0/1
+    if (rating !== undefined) {
+      fieldsToUpdate.Rating =
+        rating === null || String(rating).trim() === ""
+          ? null
+          : parseInt(rating);
+    }
+    if (isApproved !== undefined) {
+      // isApproved очікується як boolean від контролера
+      fieldsToUpdate.IsApproved = isApproved ? 1 : 0; // boolean -> 0/1 для БД
+    }
 
     if (Object.keys(fieldsToUpdate).length === 0) {
       return {
         affectedRows: 1,
         changedRows: 0,
-        message: "No fields to update provided, but review found.",
+        message: "Дані для оновлення не надано.",
       };
     }
 
@@ -207,41 +200,53 @@ const Review = {
   },
 
   async approve(reviewId, approveStatusBoolean) {
-    // Очікує boolean
+    // Очікує boolean (true для схвалення, false для відхилення)
     const sql = "UPDATE Reviews SET IsApproved = ? WHERE ReviewID = ?";
     const [result] = await pool.query(sql, [
-      approveStatusBoolean ? 1 : 0,
+      approveStatusBoolean ? 1 : 0, // Конвертує boolean в 0/1 для запису в БД
       reviewId,
-    ]); // Конвертує boolean в 0/1
-    return result.affectedRows > 0;
+    ]);
+    return result.affectedRows > 0; // Повертає true, якщо рядок було оновлено
   },
 
   async delete(reviewId) {
     const sql = "DELETE FROM Reviews WHERE ReviewID = ?";
     const [result] = await pool.query(sql, [reviewId]);
-    return result.affectedRows > 0;
+    return result.affectedRows > 0; // Повертає true, якщо рядок було видалено
   },
 
   async getByServiceId(serviceId) {
-    // isAdmin тут не потрібен, бо завжди показуємо схвалені
-    let sql = `SELECT r.ReviewID, r.UserID, u.Username AS UserName, r.ReviewText, r.Rating, r.ReviewDate, r.IsApproved
-               FROM Reviews r JOIN Users u ON r.UserID = u.UserID
-               WHERE r.ServiceID = ? AND r.IsApproved = 1`; // Завжди тільки схвалені
+    // Цей метод для публічного відображення, тому завжди тільки схвалені
+    let sql = `
+        SELECT r.ReviewID, r.UserID, u.Username AS UserName, 
+               r.ReviewText, r.Rating, r.ReviewDate, r.IsApproved
+        FROM Reviews r 
+        JOIN Users u ON r.UserID = u.UserID
+        WHERE r.ServiceID = ? AND r.IsApproved = 1`; // Завжди тільки схвалені (IsApproved = 1)
     sql += " ORDER BY r.ReviewDate DESC";
     const [rows] = await pool.query(sql, [serviceId]);
-    return rows;
+    // Конвертуємо IsApproved (хоча тут він завжди 1)
+    return rows.map((review) => ({
+      ...review,
+      IsApproved: !!review.IsApproved,
+    }));
   },
 
-  async getByUserId(userId) {
-    // Зазвичай для адміна або профілю користувача
-    let sql = `SELECT r.ReviewID, r.UserID, u.Username AS UserName, r.ServiceID, s.ServiceName, 
-                      r.ReviewText, r.Rating, r.ReviewDate, r.IsApproved
-               FROM Reviews r 
-               JOIN Users u ON r.UserID = u.UserID 
-               LEFT JOIN Services s ON r.ServiceID = s.ServiceID
-               WHERE r.UserID = ? ORDER BY r.ReviewDate DESC`;
+  async getByUserId(userId, isAdmin = false) {
+    let sql = `
+        SELECT r.ReviewID, r.UserID, u.Username AS UserName, r.ServiceID, s.ServiceName, 
+               r.ReviewText, r.Rating, r.ReviewDate, r.IsApproved
+        FROM Reviews r 
+        JOIN Users u ON r.UserID = u.UserID 
+        LEFT JOIN Services s ON r.ServiceID = s.ServiceID
+        WHERE r.UserID = ?`;
+
+    sql += " ORDER BY r.ReviewDate DESC";
     const [rows] = await pool.query(sql, [userId]);
-    return rows;
+    return rows.map((review) => ({
+      ...review,
+      IsApproved: !!review.IsApproved,
+    }));
   },
 };
 

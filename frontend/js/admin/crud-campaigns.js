@@ -515,9 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function deleteCampaign(campaignId, campaignName) {
     if (
       !confirm(
-        `Ви впевнені, що хочете видалити кампанію "${
-          campaignName || "ID: " + campaignId
-        }"? Це також видалить всі пов'язані послуги для цієї кампанії.`
+        `Ви впевнені, що хочете видалити кампанію "${campaignName}"? Це також видалить всі пов'язані послуги для цієї кампанії.`
       )
     ) {
       return;

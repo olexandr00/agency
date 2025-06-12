@@ -3,37 +3,59 @@ const pool = require("../config/db");
 
 const Service = {
   async create({ serviceName, serviceDescription, basePrice }) {
+    const trimmedServiceName = serviceName ? String(serviceName).trim() : "";
+    const trimmedServiceDescription = serviceDescription
+      ? String(serviceDescription).trim()
+      : null;
+
+    if (!trimmedServiceName) {
+      throw new Error(
+        "Назва послуги є обов'язковою і не може складатися лише з пробілів."
+      );
+    }
+
     const sql =
       "INSERT INTO Services (ServiceName, ServiceDescription, BasePrice) VALUES (?, ?, ?)";
     try {
+      const price = parseFloat(basePrice);
+      if (isNaN(price) || price < 0) {
+        throw new Error("Базова ціна (BasePrice) має бути невід'ємним числом.");
+      }
+
       const [result] = await pool.query(sql, [
-        serviceName,
-        serviceDescription,
-        basePrice,
+        trimmedServiceName,
+        trimmedServiceDescription,
+        price,
       ]);
       return {
         id: result.insertId,
-        serviceName,
-        serviceDescription,
-        basePrice,
+        serviceName: trimmedServiceName,
+        serviceDescription: trimmedServiceDescription,
+        basePrice: price,
       };
     } catch (error) {
       if (
         error.code === "ER_DUP_ENTRY" &&
         error.message.includes("ServiceName")
       ) {
-        throw new Error("Service with this name already exists.");
+        throw new Error("Послуга з такою назвою вже існує.");
       }
+      console.error("Помилка при створенні послуги в моделі:", error);
       throw error;
     }
   },
 
   async getAll(searchTerm = "") {
-    let sql = "SELECT * FROM Services";
+    let sql =
+      "SELECT ServiceID, ServiceName, ServiceDescription, BasePrice FROM Services";
     const params = [];
     if (searchTerm) {
-      sql += " WHERE ServiceName LIKE ? OR ServiceDescription LIKE ?";
-      params.push(`%${searchTerm}%`, `%${searchTerm}%`);
+      const trimmedSearchTerm = searchTerm.trim();
+      if (trimmedSearchTerm) {
+        // Додаємо умову, тільки якщо пошуковий термін не порожній після trim
+        sql += " WHERE ServiceName LIKE ? OR ServiceDescription LIKE ?";
+        params.push(`%${trimmedSearchTerm}%`, `%${trimmedSearchTerm}%`);
+      }
     }
     sql += " ORDER BY ServiceName";
     const [rows] = await pool.query(sql, params);
@@ -41,28 +63,51 @@ const Service = {
   },
 
   async findById(serviceId) {
-    const sql = "SELECT * FROM Services WHERE ServiceID = ?";
+    const sql =
+      "SELECT ServiceID, ServiceName, ServiceDescription, BasePrice FROM Services WHERE ServiceID = ?";
     const [rows] = await pool.query(sql, [serviceId]);
-    return rows[0];
+    return rows.length > 0 ? rows[0] : null;
   },
 
-  async update(serviceId, { serviceName, serviceDescription, basePrice }) {
-    // Перевіряємо, які поля були передані для оновлення
+  async update(serviceId, data) {
+    let { serviceName, serviceDescription, basePrice } = data;
     const fieldsToUpdate = {};
-    if (serviceName !== undefined) fieldsToUpdate.ServiceName = serviceName;
-    if (serviceDescription !== undefined)
-      fieldsToUpdate.ServiceDescription = serviceDescription;
-    if (basePrice !== undefined) fieldsToUpdate.BasePrice = basePrice;
+
+    if (serviceName !== undefined) {
+      const trimmedServiceName = String(serviceName).trim();
+      if (!trimmedServiceName) {
+        throw new Error(
+          "Назва послуги не може бути порожньою або складатися лише з пробілів при оновленні."
+        );
+      }
+      fieldsToUpdate.ServiceName = trimmedServiceName;
+    }
+    if (serviceDescription !== undefined) {
+      fieldsToUpdate.ServiceDescription =
+        serviceDescription === null ? null : String(serviceDescription).trim();
+      if (fieldsToUpdate.ServiceDescription === "")
+        fieldsToUpdate.ServiceDescription = null; // Якщо порожній рядок після trim, робимо null
+    }
+
+    if (basePrice !== undefined) {
+      const price = parseFloat(basePrice);
+      if (isNaN(price) || price < 0) {
+        throw new Error("Базова ціна (BasePrice) має бути невід'ємним числом.");
+      }
+      fieldsToUpdate.BasePrice = price;
+    }
 
     if (Object.keys(fieldsToUpdate).length === 0) {
-      return { changedRows: 0, message: "No fields to update provided." }; // Нічого оновлювати
+      return {
+        affectedRows: 0,
+        changedRows: 0,
+        message: "Дані для оновлення не надано.",
+      };
     }
 
     const fieldEntries = Object.entries(fieldsToUpdate);
-    const setClause = fieldEntries
-      .map(([key, value]) => `${key} = ?`)
-      .join(", ");
-    const values = fieldEntries.map(([key, value]) => value);
+    const setClause = fieldEntries.map(([key, _]) => `${key} = ?`).join(", ");
+    const values = fieldEntries.map(([_, value]) => value);
     values.push(serviceId);
 
     const sql = `UPDATE Services SET ${setClause} WHERE ServiceID = ?`;
@@ -78,57 +123,58 @@ const Service = {
         error.code === "ER_DUP_ENTRY" &&
         error.message.includes("ServiceName")
       ) {
-        throw new Error("Another service with this name already exists.");
+        throw new Error("Інша послуга з такою назвою вже існує.");
       }
+      console.error("Помилка при оновленні послуги в моделі:", error);
       throw error;
     }
   },
 
   async delete(serviceId) {
-    // Перед видаленням, перевірте пов'язані дані, якщо потрібно (наприклад, Campaign_Services, SiteOrderServices)
-    // Тут для простоти пряме видалення. Можна додати логіку ON DELETE CASCADE/SET NULL в БД
-    // або перевіряти тут і повертати помилку, якщо є залежності.
-
-    // Перевірка чи послуга використовується в Campaign_Services
-    const checkCampaignServicesSql =
-      "SELECT 1 FROM campaign_services WHERE ServiceID = ? LIMIT 1";
-    const [campaignServicesRows] = await pool.query(checkCampaignServicesSql, [
-      serviceId,
-    ]);
-    if (campaignServicesRows.length > 0) {
-      throw new Error(
-        "Cannot delete service. It is used in one or more campaigns. Please remove it from campaigns first."
-      );
-    }
-
-    // Перевірка чи послуга використовується в SiteOrderServices
-    const checkSiteOrderServicesSql =
-      "SELECT 1 FROM SiteOrderServices WHERE ServiceID = ? LIMIT 1";
-    const [siteOrderServicesRows] = await pool.query(
-      checkSiteOrderServicesSql,
-      [serviceId]
-    );
-    if (siteOrderServicesRows.length > 0) {
-      // Залежно від бізнес-логіки, можна або заборонити видалення, або
-      // встановити ServiceID = NULL в SiteOrderServices (якщо дозволено схемою БД)
-      // Або ж просто видалити, якщо логіка дозволяє (але це небезпечно для історії замовлень)
-      throw new Error(
-        "Cannot delete service. It is part of one or more site orders."
-      );
-    }
-
-    // Перевірка чи послуга використовується в Reviews
-    const checkReviewsSql = "SELECT 1 FROM Reviews WHERE ServiceID = ? LIMIT 1";
-    const [reviewRows] = await pool.query(checkReviewsSql, [serviceId]);
-    if (reviewRows.length > 0) {
-      // Можна або видалити відгуки, або встановити ServiceID в NULL (якщо в FK стоїть ON DELETE SET NULL)
-      // Для прикладу, припустимо, що відгуки про видалену послугу можуть залишитись без прив'язки (якщо FK дозволяє)
-      // Або ж вимагати видалення відгуків спочатку. Зараз стоїть ON DELETE SET NULL.
-    }
-
     const sql = "DELETE FROM Services WHERE ServiceID = ?";
-    const [result] = await pool.query(sql, [serviceId]);
-    return result.affectedRows > 0;
+    try {
+      const [result] = await pool.query(sql, [serviceId]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      if (
+        error.code === "ER_ROW_IS_REFERENCED_2" ||
+        (error.sqlState && error.sqlState.startsWith("23"))
+      ) {
+        // 23000 - integrity constraint violation
+        throw new Error(
+          "Неможливо видалити послугу, оскільки вона використовується в інших записах (наприклад, кампаніях, замовленнях або відгуках). Спочатку видаліть або змініть пов'язані записи."
+        );
+      }
+      console.error("Помилка при видаленні послуги в моделі:", error);
+      throw error;
+    }
+  },
+
+  async updateAllPricesByPercentage(percentageChange) {
+    const numericPercentage = parseFloat(percentageChange);
+
+    if (isNaN(numericPercentage)) {
+      throw new Error("Відсоток зміни має бути числовим значенням.");
+    }
+
+    if (numericPercentage <= -100) {
+      throw new Error(
+        "Зміна ціни не може бути -100% або менше, оскільки це призведе до нульової або від'ємної ціни."
+      );
+    }
+    const multiplier = 1 + parseFloat(numericPercentage) / 100;
+
+    const sql = `UPDATE Services SET BasePrice = ROUND(BasePrice * ?, 2)`;
+
+    try {
+      const [result] = await pool.query(sql, [multiplier]);
+      return {
+        affectedRows: result.affectedRows,
+        changedRows: result.changedRows,
+      };
+    } catch (error) {
+      throw new Error("Не вдалося оновити ціни послуг: " + error.message);
+    }
   },
 };
 

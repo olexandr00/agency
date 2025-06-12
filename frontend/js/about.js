@@ -1,6 +1,6 @@
 // frontend/js/about.js
 document.addEventListener("DOMContentLoaded", () => {
-  const API_URL_EMPLOYEES = "http://localhost:3000/api/employees"; // Запит на активних працівників (без all=true)
+  const API_URL_EMPLOYEES = "http://localhost:3000/api/employees";
 
   const teamGrid = document.getElementById("team-members-grid");
   const teamLoader = document.getElementById("team-loader");
@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function fetchAndDisplayTeam() {
     if (!teamGrid) {
-      console.error("[about.js] team-members-grid not found");
+      console.error("[about.js] Елемент team-members-grid не знайдено");
       return;
     }
 
@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `HTTP error! status: ${response.status}`
+          errorData.message || `HTTP помилка! Статус: ${response.status}`
         );
       }
       const employees = await response.json();
@@ -51,6 +51,9 @@ document.addEventListener("DOMContentLoaded", () => {
         photo.alt = `${employee.FirstName} ${employee.LastName}`;
         photo.onerror = function () {
           this.src = "/frontend/assets/images/default-avatar.png";
+          console.warn(
+            `[about.js] Не вдалося завантажити фото для ${employee.FirstName} ${employee.LastName}. Використовується стандартне.`
+          );
         };
 
         const name = document.createElement("h3");
@@ -68,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
         teamGrid.appendChild(memberCard);
       });
     } catch (error) {
-      console.error("[about.js] Error fetching team members:", error);
+      console.error("[about.js] Помилка завантаження членів команди:", error);
       if (teamLoader) teamLoader.style.display = "none";
       if (teamError) {
         teamError.textContent = `Помилка завантаження команди: ${error.message}`;
@@ -76,5 +79,11 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   }
-  if (teamGrid) fetchAndDisplayTeam(); // Викликати тільки якщо елемент існує
+  if (teamGrid) {
+    fetchAndDisplayTeam(); // Викликати тільки якщо елемент існує
+  } else {
+    console.warn(
+      "[about.js] Контейнер для команди (team-members-grid) не знайдено на сторінці."
+    );
+  }
 });

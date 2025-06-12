@@ -1,7 +1,7 @@
 // frontend/js/admin/crud-clients.js
 document.addEventListener("DOMContentLoaded", () => {
   const API_URL_CLIENTS = "http://localhost:3000/api/clients";
-  const token = Auth.getToken(); // Переконайтеся, що Auth та getToken() доступні
+  const token = Auth.getToken();
 
   const clientsTableBody = document.getElementById("clientsTableBody");
   const clientsLoader = document.getElementById("clients-loader");
@@ -17,14 +17,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalTitle = clientModal
     ? clientModal.querySelector("#modalTitle")
     : null;
-  const clientIdInput = document.getElementById("clientId"); // Приховане поле для ID клієнта
+  const clientIdInput = document.getElementById("clientId");
   const clientFormMessage = document.getElementById("client-form-message");
   const clientSearchInput = document.getElementById("clientSearchInput");
 
   // Отримуємо поле телефону з форми
   const contactPersonPhoneInput = document.getElementById("contactPersonPhone");
-
-  // let currentClients = []; // Не використовується глобально в цьому прикладі
 
   async function fetchAndDisplayClients(searchTerm = "") {
     showLoader();
@@ -45,7 +43,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `Не вдалося завантажити клієнтів: ${response.statusText}`
         );
       }
-      const clientsData = await response.json(); // Змінив назву, щоб уникнути конфлікту з currentClients
+      const clientsData = await response.json();
       renderClientsTable(clientsData);
     } catch (error) {
       console.error("Error fetching clients:", error);
@@ -151,7 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (client) {
       clientIdInput.value = client.ClientID;
-      // Використовуємо clientForm.elements для доступу до полів за їх name атрибутом
       if (clientForm.elements.clientCompanyName)
         clientForm.elements.clientCompanyName.value =
           client.ClientCompanyName || "";
@@ -216,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
       const id = clientIdInput.value;
       const isEditMode = !!id;
 
-      // Отримуємо дані з форми напряму, оскільки FormData не потрібна, якщо немає файлів
       const phoneValueFromForm = clientForm.elements.contactPersonPhone
         ? clientForm.elements.contactPersonPhone.value
         : "";
@@ -248,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
         contactPersonMiddleName: clientForm.elements.contactPersonMiddleName
           ? clientForm.elements.contactPersonMiddleName.value.trim() || null
           : null,
-        contactPersonPhone: phoneValueFromForm, // Вже очищене значення
+        contactPersonPhone: phoneValueFromForm,
         contactPersonEmail: clientForm.elements.contactPersonEmail
           ? clientForm.elements.contactPersonEmail.value.trim() || null
           : null,
@@ -260,7 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (
         !clientData.contactPersonLastName ||
         !clientData.contactPersonFirstName ||
-        !clientData.contactPersonPhone || // Телефон тепер обов'язковий
+        !clientData.contactPersonPhone ||
         !clientData.cooperationStartDate
       ) {
         clientFormMessage.textContent =
@@ -281,11 +277,9 @@ document.addEventListener("DOMContentLoaded", () => {
           },
           body: JSON.stringify(clientData),
         });
-        const result = await response
-          .json()
-          .catch(() => ({
-            message: response.statusText || "Помилка обробки відповіді",
-          }));
+        const result = await response.json().catch(() => ({
+          message: response.statusText || "Помилка обробки відповіді",
+        }));
 
         if (response.ok) {
           clientFormMessage.textContent =
@@ -314,7 +308,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function deleteClient(clientId, clientName) {
     if (
       !confirm(
-        `Ви впевнені, що хочете видалити клієнта "${clientName}" (ID: ${clientId})? Це може вплинути на пов'язані кампанії.`
+        `Ви впевнені, що хочете видалити клієнта "${clientName}"? Це може вплинути на пов'язані кампанії.`
       )
     ) {
       return;
@@ -361,7 +355,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  let searchTimeoutGlobal; // Змінив назву, щоб уникнути конфлікту з іншими файлами, якщо вони в одній області видимості
+  let searchTimeoutGlobal;
   if (clientSearchInput) {
     clientSearchInput.addEventListener("input", () => {
       clearTimeout(searchTimeoutGlobal);
@@ -375,7 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (typeof fetchAndDisplayClients === "function") fetchAndDisplayClients();
   } else {
     showError("Необхідна авторизація для перегляду клієнтів.");
-    // Додатково: приховати елементи керування
     if (addClientBtn) addClientBtn.style.display = "none";
     const mainContent = document.querySelector(
       ".content-area .content-header + .search-filter-bar, .content-area .table-responsive"

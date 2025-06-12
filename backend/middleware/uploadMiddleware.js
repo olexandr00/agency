@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 
 // Визначаємо кореневу директорію проекту більш надійно
-const projectRoot = path.resolve(__dirname, "..", ".."); // піднімаємось на 2 рівні з backend/middleware до кореня проекту
+const projectRoot = path.resolve(__dirname, "..", "..");
 
 const EMPLOYEES_UPLOADS_DIR = path.join(
   projectRoot,

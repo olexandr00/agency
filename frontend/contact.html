@@ -31,16 +31,9 @@
       .contact-details-list li {
         margin-bottom: 1rem;
         display: flex;
-        align-items: flex-start; /* Для вирівнювання іконок та тексту */
+        align-items: flex-start;
       }
-      .contact-details-list li i {
-        /* Якщо будете використовувати іконки */
-        font-size: 1.25rem;
-        color: var(--primary-color);
-        margin-right: 0.75rem;
-        width: 20px; /* Фіксована ширина для іконок */
-        text-align: center;
-      }
+
       .map-container {
         width: 100%;
         height: 350px;
@@ -120,7 +113,6 @@
               </div>
             </li>
             <li>
-              <!-- <i class="fas fa-clock"></i> -->
               <div>
                 <strong>Години роботи:</strong><br />
                 Пн - Пт: 9:00 - 18:00
@@ -128,9 +120,9 @@
             </li>
           </ul>
           <div class="map-container">
-            <!-- Вставте сюди код для Google Maps або іншої карти -->
+            <!-- Google Maps -->
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2540.518075906835!2d30.52090931573131!3d50.45003397947523!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x40d4ce504dab8661%3A0x71a2f72350838c78!2z0JzQsNC70ZbQsNCy0LDRjyDQvdCw0YbRltC-0L_QsNC00LAsINCa0LjRl9Cy!5e0!3m2!1suk!2sua!4v1620000000000!5m2!1suk!2sua"
+              src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d810.5098991602244!2d24.03264219973442!3d49.83854146010508!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e0!3m2!1suk!2sua!4v1748352533668!5m2!1suk!2sua"
               allowfullscreen=""
               loading="lazy"
               referrerpolicy="no-referrer-when-downgrade"
@@ -209,13 +201,23 @@
     </main>
 
     <footer class="site-footer">
-      <!-- ... (код футера) ... -->
+      <div class="container">
+        <p>© 2025 Рекламне Агентство "СуперКреатив". Всі права захищено.</p>
+        <p>
+          <a
+            href="admin/dashboard.html"
+            id="admin-link"
+            class="admin-panel-link"
+            style="display: none"
+            >Адмін-панель</a
+          >
+        </p>
+      </div>
     </footer>
 
     <script src="js/main.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/cart.js"></script>
     <script src="js/contactForm.js"></script>
-    <!-- Логіка для контактної форми -->
   </body>
 </html>

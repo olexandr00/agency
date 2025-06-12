@@ -4,12 +4,12 @@ const router = express.Router();
 const contactMessageController = require("../controllers/contactMessageController");
 const { isAuthenticated, isAdmin } = require("../middleware/authMiddleware");
 
-// --- Публічний маршрут ---
+//  Публічний маршрут
 // Будь-який користувач (гість або авторизований) може відправити повідомлення
 router.post("/", contactMessageController.createMessage);
 
-// --- Маршрути тільки для адміністраторів ---
-// Адмін отримує всі повідомлення (з можливістю фільтрації)
+// Маршрути тільки для адміністраторів
+// Адмін отримує всі повідомлення
 router.get(
   "/",
   isAuthenticated,
