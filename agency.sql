@@ -265,7 +265,7 @@ CREATE TABLE `siteorders` (
 --
 
 INSERT INTO `siteorders` (`OrderID`, `PublicOrderID`, `UserID`, `OrderDate`, `OrderStatus`, `CustomerName`, `CustomerEmail`, `CustomerPhone`, `CustomerNotes`, `TotalAmount`) VALUES
-(8, 'ZAM-25-F2349B', 2, '2025-06-02 19:03:35', 'completed', 'admin', 'admin@example.com', '+380686464397', 'Q', 30000.00);
+(8, 'ZAM-25-F2349B', 2, '2025-06-02 19:03:35', 'completed', 'admin', 'admin@example.com', '+3864634247', 'Q', 30000.00);
 
 -- --------------------------------------------------------
 
@@ -314,8 +314,6 @@ INSERT INTO `users` (`UserID`, `Username`, `Email`, `PasswordHash`, `Role`, `Reg
 (12, 'oleg_sydorenko', 'oleg.s@testmail.com', '$2a$10$dummyHashForOlegSydorenko3', 'user', '2025-05-28 08:02:00'),
 (13, 'anna_bilous', 'anna.b@testmail.com', '$2a$10$dummyHashForAnnaBilous4', 'user', '2025-05-28 08:03:00'),
 (14, 'petro_gonchar', 'petro.g@testmail.com', '$2a$10$dummyHashForPetroGonchar5', 'user', '2025-05-28 08:04:00'),
-(15, 'sasha', 'sasha.sysoe@gmail.com', '$2a$10$Gax9wblHqcgtKkWJsGu1yeppmaoGSuJ2Eqsh64ErsXE0hmS3WqAcy', 'user', '2025-06-02 16:52:28'),
-(16, 'ivan', 'ivan789@gmail.com', '$2a$10$DRt09X3rzRdincAn49NMUeLtdXzZE3hbvHyiLUaBmqMKxWr2B2cJm', 'user', '2025-06-04 18:54:18');
 
 --
 -- Индексы сохранённых таблиц
